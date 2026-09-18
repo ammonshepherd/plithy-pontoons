@@ -18,4 +18,4 @@ Enable Pages for the `main` branch in the repository settings. The app is static
 
 ## Supabase setup
 
-`supabase-schema.sql` contains the hosted database schema and Row Level Security policies. Run it in the Supabase SQL Editor after creating the project. `supabase-config.js` contains only the public browser key; never place a service-role key or database password in the repository.
+`supabase-schema.sql` contains the hosted database schema and Row Level Security policies. Run it in the Supabase SQL Editor after creating the project. If you already ran that file, run `supabase-sync-migration.sql` to add the cloud snapshot table used by offline sync. `supabase-config.js` contains only the public browser key; never place a service-role key or database password in the repository.

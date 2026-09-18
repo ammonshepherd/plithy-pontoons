@@ -14,13 +14,21 @@ const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD
 const esc = s => String(s ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const categorySeed = () => Object.fromEntries(GROUPS.flatMap(([group,names])=>names.map(name=>[name,{id:uid('cat'),name,group,note:NOTES[name]||'',targetMonth:group==='Yearly Expenses'?'12':'',targetAmount:'',savings:0,plans:{}}])));
 const initialState = () => ({version:1,categories:categorySeed(),accounts:[],transactions:[],assignments:{}});
-let state = loadState();
+let state = initialState();
 let activeMonth = monthKey();
 let deferredInstall;
 let authMode = 'signin';
+let syncTimer;
+let isPullingCloud = false;
+let cloudHouseholdId = null;
 
-function loadState(){try{const raw=localStorage.getItem(STORAGE_KEY); return raw?JSON.parse(raw):initialState();}catch{return initialState();}}
-function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
+function loadState(){try{const raw=localStorage.getItem(userStorageKey()); return raw?JSON.parse(raw):initialState();}catch{return initialState();}}
+function userStorageKey(){return `${STORAGE_KEY}:${window.currentBudgetUser?.id||'guest'}`;}
+function save(){localStorage.setItem(userStorageKey(),JSON.stringify(state));if(window.currentBudgetUser&&!isPullingCloud)queueCloudSave();}
+function queueCloudSave(){clearTimeout(syncTimer);syncTimer=setTimeout(pushCloudSnapshot,700);}
+async function getHouseholdId(){if(cloudHouseholdId)return cloudHouseholdId;const {data,error}=await supabaseClient.from('household_members').select('household_id').eq('user_id',window.currentBudgetUser.id).limit(1).maybeSingle();if(error)throw error;cloudHouseholdId=data?.household_id||null;return cloudHouseholdId;}
+async function pushCloudSnapshot(){if(!window.currentBudgetUser||!supabaseClient||!navigator.onLine)return;try{const householdId=await getHouseholdId();if(!householdId)return;const {error}=await supabaseClient.from('budget_snapshots').upsert({household_id:householdId,data:state,updated_at:new Date().toISOString()});if(error)throw error;}catch(error){console.warn('Budget will sync when online:',error.message);}}
+async function pullCloudSnapshot(){if(!window.currentBudgetUser||!supabaseClient)return;try{const householdId=await getHouseholdId();if(!householdId)return;const {data,error}=await supabaseClient.from('budget_snapshots').select('data').eq('household_id',householdId).maybeSingle();if(error)throw error;const local=localStorage.getItem(userStorageKey());if(data?.data){isPullingCloud=true;state=data.data;localStorage.setItem(userStorageKey(),JSON.stringify(state));isPullingCloud=false;}else if(local){await pushCloudSnapshot();}else{save();await pushCloudSnapshot();}render();}catch(error){isPullingCloud=false;console.warn('Using offline budget cache:',error.message);}}
 function category(name){return state.categories[name];}
 function monthTransactions(m=activeMonth){return state.transactions.filter(t=>t.date?.slice(0,7)===m);}
 function assignments(m=activeMonth){return state.assignments[m]||{};}
@@ -50,9 +58,10 @@ function setup(){document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=
 function shiftMonth(delta){const d=new Date(`${activeMonth}-01T12:00:00`);d.setMonth(d.getMonth()+delta);activeMonth=monthKey(d);render();}
 function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`harbor-budget-${monthKey()}.json`;a.click();URL.revokeObjectURL(a.href);}
 function restore(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const imported=JSON.parse(reader.result);if(!imported.categories||!imported.transactions)throw new Error();state=imported;save();render();alert('Budget restored.');}catch{alert('That file is not a valid Harbor Budget backup.');}};reader.readAsText(file);e.target.value='';}
-function showApp(session){document.getElementById('auth-gate').hidden=true;document.getElementById('app-shell').hidden=false;window.currentBudgetUser=session?.user||null;render();}
+async function showApp(session){document.getElementById('auth-gate').hidden=true;document.getElementById('app-shell').hidden=false;window.currentBudgetUser=session?.user||null;state=loadState();render();await pullCloudSnapshot();}
 function showAuth(){document.getElementById('auth-gate').hidden=false;document.getElementById('app-shell').hidden=true;}
 function setupAuth(){const form=document.getElementById('auth-form');const toggle=document.getElementById('auth-toggle');const title=document.getElementById('auth-title');const subtitle=document.getElementById('auth-subtitle');const submit=document.getElementById('auth-submit');const message=document.getElementById('auth-message');toggle.onclick=()=>{authMode=authMode==='signin'?'signup':'signin';title.textContent=authMode==='signin'?'Sign in to your budget':'Create your budget account';subtitle.textContent=authMode==='signin'?'Your account keeps your budget ready on every device.':'Start your private envelope budget with a free account.';submit.textContent=authMode==='signin'?'Sign in':'Create account';toggle.textContent=authMode==='signin'?'Create a new account':'I already have an account';message.textContent='';};form.onsubmit=async e=>{e.preventDefault();message.className='auth-message';message.textContent='Working…';const email=document.getElementById('auth-email').value.trim();const password=document.getElementById('auth-password').value;const result=authMode==='signin'?await supabaseClient.auth.signInWithPassword({email,password}):await supabaseClient.auth.signUp({email,password});if(result.error){message.textContent=result.error.message;return;}if(authMode==='signup'&&!result.data.session){message.className='auth-message success';message.textContent='Account created. Check your email to confirm it, then sign in.';}else{message.textContent='';}};}
 async function initAuth(){setupAuth();document.getElementById('sign-out').onclick=()=>supabaseClient?.auth.signOut();if(!supabaseClient){showAuth();document.getElementById('auth-message').textContent='Supabase configuration is missing.';return;}supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session)showApp(session);else showAuth();});const {data}=await supabaseClient.auth.getSession();if(data.session)showApp(data.session);else showAuth();}
+window.addEventListener('online',()=>{if(window.currentBudgetUser)pushCloudSnapshot();});
 setup();
 initAuth();

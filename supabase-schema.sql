@@ -112,6 +112,14 @@ create table if not exists public.reconciliations (
   created_at timestamptz not null default now()
 );
 
+-- Local-first bridge used by the first cloud-sync pass. The app keeps its
+-- offline cache locally and stores a protected household snapshot here.
+create table if not exists public.budget_snapshots (
+  household_id uuid primary key references public.households(id) on delete cascade,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists transactions_household_date_idx on public.transactions(household_id, transaction_date);
 create index if not exists category_monthly_household_month_idx on public.category_monthly(household_id, month_start);
 create index if not exists category_transfers_household_month_idx on public.category_transfers(household_id, month_start);
@@ -126,6 +134,7 @@ alter table public.category_savings enable row level security;
 alter table public.transactions enable row level security;
 alter table public.category_transfers enable row level security;
 alter table public.reconciliations enable row level security;
+alter table public.budget_snapshots enable row level security;
 
 create policy "members can view households" on public.households for select using (public.is_household_member(id));
 create policy "owners can update households" on public.households for update using (exists (select 1 from public.household_members m where m.household_id=id and m.user_id=auth.uid() and m.role='owner'));
@@ -140,6 +149,7 @@ create policy "members manage savings" on public.category_savings for all using 
 create policy "members manage transactions" on public.transactions for all using (public.is_household_member(household_id)) with check (public.is_household_member(household_id));
 create policy "members manage category transfers" on public.category_transfers for all using (public.is_household_member(household_id)) with check (public.is_household_member(household_id));
 create policy "members manage reconciliations" on public.reconciliations for all using (public.is_household_member(household_id)) with check (public.is_household_member(household_id));
+create policy "members manage budget snapshots" on public.budget_snapshots for all using (public.is_household_member(household_id)) with check (public.is_household_member(household_id));
 
 -- Create a household automatically for a newly authenticated user.
 create or replace function public.create_default_household()
