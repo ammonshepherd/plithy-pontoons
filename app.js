@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'harbor-budget-state-v1';
+const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
 const GROUPS = [
   ['Weekly Basics', ['Groceries','General','Gas','Kids']],
   ['Monthly Autopay', ['Mortgage','Tithing/Fast Offerings','Ballet','Piano Lessons','Water & Sewage','Dominion','Spotify','Gerber Life Insurance','Transamerica','T-Mobile Internet','Google Fi','Tello','Yaris','Discover Card','Bank Fees, Interest & Stuff','Tac Mission']],
@@ -16,6 +17,7 @@ const initialState = () => ({version:1,categories:categorySeed(),accounts:[],tra
 let state = loadState();
 let activeMonth = monthKey();
 let deferredInstall;
+let authMode = 'signin';
 
 function loadState(){try{const raw=localStorage.getItem(STORAGE_KEY); return raw?JSON.parse(raw):initialState();}catch{return initialState();}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
@@ -48,4 +50,9 @@ function setup(){document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=
 function shiftMonth(delta){const d=new Date(`${activeMonth}-01T12:00:00`);d.setMonth(d.getMonth()+delta);activeMonth=monthKey(d);render();}
 function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`harbor-budget-${monthKey()}.json`;a.click();URL.revokeObjectURL(a.href);}
 function restore(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const imported=JSON.parse(reader.result);if(!imported.categories||!imported.transactions)throw new Error();state=imported;save();render();alert('Budget restored.');}catch{alert('That file is not a valid Harbor Budget backup.');}};reader.readAsText(file);e.target.value='';}
+function showApp(session){document.getElementById('auth-gate').hidden=true;document.getElementById('app-shell').hidden=false;window.currentBudgetUser=session?.user||null;render();}
+function showAuth(){document.getElementById('auth-gate').hidden=false;document.getElementById('app-shell').hidden=true;}
+function setupAuth(){const form=document.getElementById('auth-form');const toggle=document.getElementById('auth-toggle');const title=document.getElementById('auth-title');const subtitle=document.getElementById('auth-subtitle');const submit=document.getElementById('auth-submit');const message=document.getElementById('auth-message');toggle.onclick=()=>{authMode=authMode==='signin'?'signup':'signin';title.textContent=authMode==='signin'?'Sign in to your budget':'Create your budget account';subtitle.textContent=authMode==='signin'?'Your account keeps your budget ready on every device.':'Start your private envelope budget with a free account.';submit.textContent=authMode==='signin'?'Sign in':'Create account';toggle.textContent=authMode==='signin'?'Create a new account':'I already have an account';message.textContent='';};form.onsubmit=async e=>{e.preventDefault();message.className='auth-message';message.textContent='Working…';const email=document.getElementById('auth-email').value.trim();const password=document.getElementById('auth-password').value;const result=authMode==='signin'?await supabaseClient.auth.signInWithPassword({email,password}):await supabaseClient.auth.signUp({email,password});if(result.error){message.textContent=result.error.message;return;}if(authMode==='signup'&&!result.data.session){message.className='auth-message success';message.textContent='Account created. Check your email to confirm it, then sign in.';}else{message.textContent='';}};}
+async function initAuth(){setupAuth();document.getElementById('sign-out').onclick=()=>supabaseClient?.auth.signOut();if(!supabaseClient){showAuth();document.getElementById('auth-message').textContent='Supabase configuration is missing.';return;}supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session)showApp(session);else showAuth();});const {data}=await supabaseClient.auth.getSession();if(data.session)showApp(data.session);else showAuth();}
 setup();
+initAuth();

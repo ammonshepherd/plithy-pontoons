@@ -10,10 +10,18 @@
   <title>Harbor Budget</title>
 </head>
 <body>
-  <div id="app-shell">
+  <div id="auth-gate" class="auth-gate" hidden>
+    <div class="auth-card">
+      <div class="brand auth-brand"><span class="brand-mark">H</span><div><strong>Harbor Budget</strong><small>Your private envelope budget</small></div></div>
+      <div class="auth-copy"><p class="eyebrow">Welcome</p><h1 id="auth-title">Sign in to your budget</h1><p id="auth-subtitle">Your account keeps your budget ready on every device.</p></div>
+      <form id="auth-form"><label class="form-field">Email<input id="auth-email" type="email" autocomplete="email" required></label><label class="form-field">Password<input id="auth-password" type="password" autocomplete="current-password" minlength="6" required></label><button class="primary auth-submit" type="submit" id="auth-submit">Sign in</button></form>
+      <p id="auth-message" class="auth-message"></p><button class="text-button" id="auth-toggle" type="button">Create a new account</button>
+    </div>
+  </div>
+  <div id="app-shell" hidden>
     <header class="topbar">
       <div class="brand"><span class="brand-mark">H</span><div><strong>Harbor Budget</strong><small>Simple envelope planning</small></div></div>
-      <div class="top-actions"><button class="icon-btn" id="install-btn" hidden>Install</button><button class="icon-btn" id="backup-btn">Backup</button><button class="icon-btn" id="restore-btn">Restore</button><input id="restore-input" type="file" accept="application/json" hidden></div>
+      <div class="top-actions"><button class="icon-btn" id="install-btn" hidden>Install</button><button class="icon-btn" id="backup-btn">Backup</button><button class="icon-btn" id="restore-btn">Restore</button><button class="icon-btn" id="sign-out">Sign out</button><input id="restore-input" type="file" accept="application/json" hidden></div>
     </header>
     <main>
       <section id="dashboard-view" class="view active">
@@ -37,6 +45,7 @@
     <nav class="bottom-nav"><button class="nav-item active" data-view="dashboard-view"><span>⌂</span>Budget</button><button class="nav-item" data-view="transactions-view"><span>↔</span>Activity</button><button class="nav-item" data-view="accounts-view"><span>▣</span>Accounts</button><button class="nav-item" data-view="settings-view"><span>⚙</span>Settings</button></nav>
   </div>
   <div id="modal-root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
