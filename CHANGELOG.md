@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.1 — 2026-09-19
+
+- Added a migration safeguard for accounts created before opening-balance funds were introduced.
+
 ## v0.5.0 — 2026-09-19
 
 - Included positive checking and savings opening balances in initial available-to-assign funds.
