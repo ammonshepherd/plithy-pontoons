@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.11.0 — 2026-09-19
+
+- Moved Backup, Restore, and Sign out controls into Settings.
+- Added an Add Transaction button to the top header.
+
 ## v0.10.0 — 2026-09-19
 
 - Aligned column headings with the amounts below them.
