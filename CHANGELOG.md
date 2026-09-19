@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.13.0 — 2026-09-19
+
+- Made the top and bottom navigation fixed and continuously available.
+- Replaced the transaction type dropdown with an Expense/Income pill toggle.
+- Expense defaults to selected with red styling; Income uses green styling.
+- Added drag-and-drop category reordering while preserving the existing order by default.
+
 ## v0.12.0 — 2026-09-19
 
 - Show the Available to Assign card only when money is available.
