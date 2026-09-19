@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.0 — 2026-09-19
+
+- Added one column-heading row per category group instead of repeating labels on every category.
+- Made category names the edit links.
+- Removed the separate category menu buttons and tightened row spacing.
+
 ## v0.8.1 — 2026-09-19
 
 - Changed the wipe/reset action to remove all categories and user data.
