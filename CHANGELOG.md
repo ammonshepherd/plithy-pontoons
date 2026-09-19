@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.15.0
+
+- Changed the expense warning to explain that more money must be assigned before recording the transaction.
+- Made Assigned amounts editable directly in the category row without opening a modal.
+- Added more mobile top spacing and constrained mobile content width.
+- Moved category drag-and-drop reordering to Settings and simplified the drag handle.
+
 ## v0.14.1
 
 - Added a dedicated drag handle column and visual drop target for category reordering.
