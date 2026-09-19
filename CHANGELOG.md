@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.18.0
+
+- Added 50px more space between the header and page content.
+- Moved Envelopes above the month heading and capitalized Assign Money.
+- Reused the grouped category picker in the Assign Money modal.
+- Added brighter Activity and Accounts action buttons.
+- Condensed Settings category groups and made category names the edit links.
+- Clarified and separated Backup, Restore Backup, and Sign Out actions.
+
 ## v0.17.0
 
 - Reordered dashboard columns to Remaining, Spent, Assigned, Planned, and Saved.
