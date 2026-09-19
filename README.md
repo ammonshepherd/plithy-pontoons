@@ -1,4 +1,4 @@
-# Harbor Budget
+# BudgetBuddy
 
 A browser-only, offline-capable envelope budget planner. The first version is intentionally simple and practical, with local browser storage and JSON backup/restore.
 

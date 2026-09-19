@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.0 — 2026-09-19
+
+- Renamed the app to BudgetBuddy.
+- Updated the visual theme to use the Clearpath-inspired navy, blue, and pale-paper design language.
+- Added compact cards, softer shadows, and a translucent bottom navigation style.
+
 ## v0.6.0 — 2026-09-19
 
 - Added a confirmed testing button to wipe local and cloud budget data.
