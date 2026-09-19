@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.19.0
+
+- Returned the month heading to the top of the dashboard.
+- Increased dashboard amount size, tightened category rows, softened category-name weight, and added brighter purple sparkle styling for Saved.
+- Added editable, reorderable, addable, and deletable category groups in Settings.
+- Added category-to-category money transfers from the Remaining amount.
+- Added account detail views with transaction lists, reconciliation checkboxes, individual/bulk reconciliation, and lock icons.
+- Simplified account cards to name and current balance.
+
 ## v0.18.0
 
 - Added 50px more space between the header and page content.
