@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.16.0
+
+- Corrected mobile category header and amount-column alignment.
+- Redesigned the Add Transaction modal into a single-column layout.
+- Added a large, display-style amount entry at the top.
+- Replaced Cleared with a toggle switch.
+- Replaced the default category select with a grouped, styled category picker.
+
 ## v0.15.0
 
 - Changed the expense warning to explain that more money must be assigned before recording the transaction.
