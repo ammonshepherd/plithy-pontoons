@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.0 — 2026-09-19
+
+- Added a confirmed testing button to wipe local and cloud budget data.
+- Added CSV import for `Category, Monthly plan amount, Group`.
+- Imported plans apply to the selected month without assigning money.
+- Made imported and renamed categories appear in their configured groups.
+
 ## v0.5.1 — 2026-09-19
 
 - Added a migration safeguard for accounts created before opening-balance funds were introduced.
