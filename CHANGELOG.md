@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8.0 — 2026-09-19
+
+- Grouped each envelope section into one unified panel.
+- Reduced category row spacing and visual noise.
+- Added compact separators and group headings inspired by the reference design.
+
 ## v0.7.0 — 2026-09-19
 
 - Renamed the app to BudgetBuddy.
