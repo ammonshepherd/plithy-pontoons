@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.17.0
+
+- Reordered dashboard columns to Remaining, Spent, Assigned, Planned, and Saved.
+- Added red Spent, green Remaining, and sparkly Saved styling.
+- Added horizontal scrolling for dashboard category groups.
+- Added a softly yellow-tinted dashboard column header to match the activity table treatment.
+- Replaced JavaScript alerts with themed BudgetBuddy message modals.
+
 ## v0.16.0
 
 - Corrected mobile category header and amount-column alignment.
