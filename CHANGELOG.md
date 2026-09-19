@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.1 — 2026-09-19
+
+- Changed the wipe/reset action to remove all categories and user data.
+- A wiped budget now opens as a completely blank app.
+
 ## v0.8.0 — 2026-09-19
 
 - Grouped each envelope section into one unified panel.
