@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.19.1
+
+- Fixed Settings category and group drag-and-drop initialization.
+- Added explicit browser drag payloads and isolated nested category/group drag handlers.
+- Added dropping categories onto a group area, including empty groups.
+
 ## v0.19.0
 
 - Returned the month heading to the top of the dashboard.
