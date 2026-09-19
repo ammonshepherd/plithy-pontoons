@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.10.0 — 2026-09-19
+
+- Aligned column headings with the amounts below them.
+- Removed the Category column heading.
+- Made only category names bold; metric values and notes are now normal weight.
+
 ## v0.9.0 — 2026-09-19
 
 - Added one column-heading row per category group instead of repeating labels on every category.
