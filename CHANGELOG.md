@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.14.1
+
+- Added a dedicated drag handle column and visual drop target for category reordering.
+- Improved dropping categories onto a group container, including cross-group moves.
+- Kept category rows compact while allowing horizontal scrolling on narrow screens.
+
 ## v0.14.0 — 2026-09-19
 
 - Increased desktop spacing below the fixed top navigation.
