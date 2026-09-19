@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.12.0 — 2026-09-19
+
+- Show the Available to Assign card only when money is available.
+- Hide Assign Money when the available amount is zero.
+- Made assigned amounts clickable category-specific assignment links.
+- Added a more prominent header transaction button.
+
 ## v0.11.0 — 2026-09-19
 
 - Moved Backup, Restore, and Sign out controls into Settings.

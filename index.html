@@ -26,12 +26,7 @@
     <main>
       <section id="dashboard-view" class="view active">
         <div class="page-heading"><div><p class="eyebrow">Monthly budget</p><h1 id="month-title"></h1></div><div class="month-nav"><button class="secondary" id="prev-month">←</button><button class="secondary" id="today-month">Today</button><button class="secondary" id="next-month">→</button></div></div>
-        <div class="summary-grid">
-          <article class="summary-card accent"><span>Available to assign</span><strong id="available-to-assign">$0.00</strong><small>Income not assigned to categories</small></article>
-          <article class="summary-card"><span>Assigned this month</span><strong id="assigned-total">$0.00</strong><small>Money placed in envelopes</small></article>
-          <article class="summary-card"><span>Spent this month</span><strong id="spent-total">$0.00</strong><small>Category spending</small></article>
-          <article class="summary-card"><span>Credit card ready</span><strong id="cc-ready-total">$0.00</strong><small>Available for card payments</small></article>
-        </div>
+        <div id="available-summary"></div>
         <div class="section-heading"><div><h2>Envelopes</h2><p>Assign income, track spending, and protect your category savings.</p></div><button class="primary" id="add-assignment">+ Assign money</button></div>
         <div id="category-groups"></div>
       </section>
