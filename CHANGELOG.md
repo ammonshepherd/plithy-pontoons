@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.14.0 — 2026-09-19
+
+- Increased desktop spacing below the fixed top navigation.
+- Standardized category dropdown ordering to match the plan.
+- Added a dedicated drag handle for category reordering.
+- Enabled moving categories between groups by drag and drop.
+- Made Add Transaction blue and Assign Money green.
+
 ## v0.13.0 — 2026-09-19
 
 - Made the top and bottom navigation fixed and continuously available.
