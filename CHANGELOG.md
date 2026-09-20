@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.24.0
+
+- Added compact bordered category rows for clearer separation on mobile.
+- Increased mobile metric and category amount sizes without adding large spacing.
+
 ## v0.23.0
 
 - Tightened mobile group sections and removed excess outer spacing around category cards.
