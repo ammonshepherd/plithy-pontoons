@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.33.0
+
+- Consolidated CSV monthly-plan importing to one control.
+- Added an explicit month selector so imported plans can be applied to any chosen month.
+
 ## v0.32.0
 
 - Added an Edit button to each account card.
