@@ -1,4 +1,4 @@
-const APP_VERSION = '0.31.0';
+const APP_VERSION = '0.31.1';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
 const DEFAULT_GROUPS = [
@@ -42,7 +42,7 @@ function assignedTotal(m){return Object.values(assignments(m)).reduce((a,v)=>a+N
 function spentFor(name,m=activeMonth){return monthTransactions(m).filter(t=>t.type==='expense'&&t.category===name).reduce((a,t)=>a+Number(t.amount),0);}
 function savedFor(name){return Number(category(name)?.savings||0);}
 function planSuggestion(name,m=activeMonth){const d=new Date(`${m}-01T12:00:00`); d.setMonth(d.getMonth()-1); const prior=monthKey(d); const spent=spentFor(name,prior); const cat=category(name); if(cat?.targetAmount&&cat.targetMonth){const year=d.getFullYear()+(Number(cat.targetMonth)<d.getMonth()+1?1:0); const due=new Date(`${year}-${String(cat.targetMonth).padStart(2,'0')}-01T12:00:00`); const months=Math.max(1,(due.getFullYear()-d.getFullYear())*12+due.getMonth()-d.getMonth()); return Math.max(0,Number(cat.targetAmount)/months); } return spent;}
-function availableToAssign(m=activeMonth){const openingFunds=m===state.openingFundsMonth?Number(state.openingFunds||0):0;return incomeTotal(m)+openingFunds-assignedTotal(m);}
+function availableToAssign(m=activeMonth){const openingFunds=m===state.openingFundsMonth?Number(state.openingFunds||0):0;return Math.round((incomeTotal(m)+openingFunds-assignedTotal(m))*100)/100;}
 function creditCardReady(){return state.transactions.filter(t=>t.type==='expense'&&t.accountId&&state.accounts.find(a=>a.id===t.accountId)?.type==='credit').reduce((a,t)=>a+Number(t.amount),0)-state.transactions.filter(t=>t.type==='transfer'&&t.toAccountId&&state.accounts.find(a=>a.id===t.toAccountId)?.type==='credit').reduce((a,t)=>a+Number(t.amount),0);}
 function accountBalance(a){let total=Number(a.openingBalance||0); for(const t of state.transactions){if(t.accountId===a.id){if(t.type==='income') total+=Number(t.amount); if(t.type==='expense') total-=Number(t.amount); if(t.type==='transfer') total-=Number(t.amount);} if(t.toAccountId===a.id&&t.type==='transfer') total+=Number(t.amount);} return total;}
 function categoryRemaining(name,m=activeMonth){return Number(assignments(m)[name]||0)-spentFor(name,m);}

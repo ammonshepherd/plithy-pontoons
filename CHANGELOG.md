@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.31.1
+
+- Fixed assignment validation so remaining cents, including the final $0.99, can be assigned without floating-point rounding errors.
+
 ## v0.31.0
 
 - Added persistent transaction tags.
