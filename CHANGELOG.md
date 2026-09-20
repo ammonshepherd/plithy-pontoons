@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.19.9
+
+- Clicking away from an assignment field now saves and exits without advancing.
+- Pressing Enter advances to the next assignment field; tapping another amount opens that specific field.
+- Matched assignment input sizing to dashboard values and tightened mobile columns.
+
 ## v0.19.8
 
 - Assignment amounts now save without refreshing the dashboard.
