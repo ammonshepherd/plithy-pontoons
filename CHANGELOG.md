@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.25.0
+
+- Changed mobile category groups and rows to flat, full-width list rows without rounded borders.
+- Removed the mobile Envelopes heading and description while keeping the Assign Money control.
+
 ## v0.24.0
 
 - Added compact bordered category rows for clearer separation on mobile.
