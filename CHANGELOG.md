@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.22.0
+
+- Moved the mobile category name into the right-hand column above Saved.
+- Increased the category name size and kept the Saved cell spanning the lower two rows.
+
 ## v0.21.0
 
 - Reorganized mobile category amounts into a three-column layout.
