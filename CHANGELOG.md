@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.19.3
+
+- Added one sparkle on each side of every Saved amount on the dashboard.
+
 ## v0.19.2
 
 - Explicitly left-aligned category names and notes in Settings rows.
