@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.19.6
+
+- Changed the Budget navigation icon to a colored dollar sign.
+- Changed the Settings navigation icon to a colored gear.
+
 ## v0.19.5
 
 - Fixed Move Money category selection so choosing a source category updates the picker correctly.
