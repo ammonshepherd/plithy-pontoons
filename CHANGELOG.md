@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.19.5
+
+- Fixed Move Money category selection so choosing a source category updates the picker correctly.
+- Removed the underline from dashboard Remaining amounts.
+
 ## v0.19.4
 
 - Changed the Activity navigation icon to a dollar bill.
