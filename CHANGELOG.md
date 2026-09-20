@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.19.2
+
+- Explicitly left-aligned category names and notes in Settings rows.
+
 ## v0.19.1
 
 - Fixed Settings category and group drag-and-drop initialization.

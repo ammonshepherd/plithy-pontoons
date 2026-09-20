@@ -1,4 +1,4 @@
-const APP_VERSION = '0.19.1';
+const APP_VERSION = '0.19.2';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
 const DEFAULT_GROUPS = [
