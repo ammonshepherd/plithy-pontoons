@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.34.0
+
+- Replaced the account transaction modal with a full-page Accounts detail view.
+- Added an Accounts back button while preserving balance, account editing, transaction checkboxes, bulk reconciliation, and clickable lock statuses.
+
 ## v0.33.0
 
 - Consolidated CSV monthly-plan importing to one control.
