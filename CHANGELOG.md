@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.32.0
+
+- Added an Edit button to each account card.
+- Account editing supports name, notes, account type, and opening balance while preserving transaction history.
+
 ## v0.31.2
 
 - Fixed inline Assigned-column editing to validate increases using integer cents, including the final $0.99.
