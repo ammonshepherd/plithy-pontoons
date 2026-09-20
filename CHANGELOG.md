@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.29.0
+
+- Explicitly removed padding from mobile amount cells and their controls.
+- Increased vertical separation between mobile category rows.
+
 ## v0.28.1
 
 - Extended the active bottom-navigation highlight to include the icon and text label across the full button.
