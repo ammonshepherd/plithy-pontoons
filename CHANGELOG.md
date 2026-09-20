@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.28.0
+
+- Added a subtle light-blue background highlight behind the active bottom-navigation icon.
+
 ## v0.27.0
 
 - Centered mobile metric labels and amounts within their cells.
