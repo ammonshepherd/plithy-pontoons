@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.22.1
+
+- Moved the mobile category name and Saved panel to the left column.
+- Positioned Remaining/Spent and Assigned/Planned in the two columns on the right.
+
 ## v0.22.0
 
 - Moved the mobile category name into the right-hand column above Saved.
