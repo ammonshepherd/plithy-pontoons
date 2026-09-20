@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.26.0
+
+- Flattened mobile metric cells by removing rounded corners and borders.
+- Reduced padding between category amounts for a denser dashboard.
+
 ## v0.25.0
 
 - Changed mobile category groups and rows to flat, full-width list rows without rounded borders.
