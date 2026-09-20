@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.19.7
+
+- Simplified account cards to show the account name, optional notes, and current balance.
+- Moved reconciliation into each account's transaction list with checkboxes, bulk reconciliation, and clickable lock status icons.
+- Removed the separate Accounts-page reconciliation panel and added notes when creating an account.
+
 ## v0.19.6
 
 - Changed the Budget navigation icon to a colored dollar sign.
