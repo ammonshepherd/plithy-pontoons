@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.21.0
+
+- Reorganized mobile category amounts into a three-column layout.
+- Added differentiated backgrounds for spending/planning values.
+- Made the Saved area span both rows with a prominent sparkly savings treatment.
+
 ## v0.20.0
 
 - Reworked the mobile dashboard into stacked category cards with all budget values visible without horizontal scrolling.
