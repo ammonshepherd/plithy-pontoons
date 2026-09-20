@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.20.0
+
+- Reworked the mobile dashboard into stacked category cards with all budget values visible without horizontal scrolling.
+- Kept the desktop dashboard's existing column layout.
+
 ## v0.19.9
 
 - Clicking away from an assignment field now saves and exits without advancing.
