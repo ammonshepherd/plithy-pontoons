@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.31.0
+
+- Added persistent transaction tags.
+- Added Settings management for adding, editing, and deleting tags.
+- Added tag selection to the Add Transaction modal.
+
 ## v0.30.0
 
 - Removed mobile background colors from all category amount cells.
