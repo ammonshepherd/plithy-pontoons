@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.31.2
+
+- Fixed inline Assigned-column editing to validate increases using integer cents, including the final $0.99.
+
 ## v0.31.1
 
 - Fixed assignment validation so remaining cents, including the final $0.99, can be assigned without floating-point rounding errors.
