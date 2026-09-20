@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.30.0
+
+- Removed mobile background colors from all category amount cells.
+- Preserved the rounded bordered background treatment for category names.
+- Kept Saved text and sparkle accents visible without its panel background.
+
 ## v0.29.0
 
 - Explicitly removed padding from mobile amount cells and their controls.
