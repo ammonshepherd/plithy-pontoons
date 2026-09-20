@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.19.4
+
+- Changed the Activity navigation icon to a dollar bill.
+- Changed the Accounts navigation icon to a bank.
+
 ## v0.19.3
 
 - Added one sparkle on each side of every Saved amount on the dashboard.
