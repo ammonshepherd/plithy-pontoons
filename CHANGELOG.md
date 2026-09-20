@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.28.1
+
+- Extended the active bottom-navigation highlight to include the icon and text label across the full button.
+
 ## v0.28.0
 
 - Added a subtle light-blue background highlight behind the active bottom-navigation icon.
