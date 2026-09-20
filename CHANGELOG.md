@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.27.0
+
+- Centered mobile metric labels and amounts within their cells.
+- Removed the remaining metric-cell padding.
+
 ## v0.26.0
 
 - Flattened mobile metric cells by removing rounded corners and borders.
