@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.19.8
+
+- Assignment amounts now save without refreshing the dashboard.
+- After saving an assignment, focus advances to the next category's Assign field.
+
 ## v0.19.7
 
 - Simplified account cards to show the account name, optional notes, and current balance.
