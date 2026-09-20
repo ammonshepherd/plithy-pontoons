@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.23.0
+
+- Tightened mobile group sections and removed excess outer spacing around category cards.
+- Reduced mobile padding and gaps for dashboard amounts, summary cards, panels, headings, and controls.
+
 ## v0.22.1
 
 - Moved the mobile category name and Saved panel to the left column.
