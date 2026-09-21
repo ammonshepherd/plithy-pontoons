@@ -362,3 +362,8 @@
 - Added confirmed transaction deletion from the Activity page.
 - Added confirmed transaction deletion from account detail pages.
 - Deleting a transaction immediately recalculates account balances and category totals.
+## v0.53.0
+- Switched cloud persistence to normalized Supabase tables for accounts, categories, monthly budgets, savings, layouts, and transactions.
+- Added normalized metadata and monthly-layout storage for current BudgetBuddy features.
+- Kept browser local storage as an offline cache.
+- Updated wipe-budget to clear normalized data as well as the legacy snapshot.
