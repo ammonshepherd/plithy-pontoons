@@ -358,3 +358,7 @@
 ## v0.1.0
 
 - Added the initial local-first envelope budget PWA.
+## v0.52.0
+- Added confirmed transaction deletion from the Activity page.
+- Added confirmed transaction deletion from account detail pages.
+- Deleting a transaction immediately recalculates account balances and category totals.
