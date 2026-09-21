@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.36.0
+
+- Fixed month navigation so future months remain accessible.
+- The previous-month arrow is hidden when the selected month is the earliest available budget month.
+
 ## v0.35.0
 
 - Assignment amount edits now persist while typing, improving reliability on mobile keyboards and navigation.
