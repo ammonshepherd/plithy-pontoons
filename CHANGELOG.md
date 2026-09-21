@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.45.0
+- Prevented an older cloud snapshot from overwriting newer local changes after refresh.
+- Added timestamp-aware synchronization for mobile transactions and other budget edits.
+
 ## v0.44.0
 - Made unaccepted Planned cells and labels much lighter.
 - Changed the action to “Accept Current Plan” and styled it green.
