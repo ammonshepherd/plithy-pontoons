@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.38.0
+- Fixed applying monthly plans to the selected month.
+- Added copy-previous-month and CSV actions when an empty month needs a plan.
+- Made Planned amounts editable in place with cents, autosave, and Enter-to-advance behavior.
+
 ## v0.37.0
 
 - Added assigned amounts beside categories in the Assign Money picker.
