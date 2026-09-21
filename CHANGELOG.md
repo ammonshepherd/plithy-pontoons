@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.43.0
+- Fixed the monthly plan status panel ignoring its hidden state because of its flex display rule.
+- The status panel now disappears after a plan is accepted or imported.
+
 ## v0.42.0
 - Made accepted plan state explicit with per-month plan markers.
 - Kept Accept current plan visible for unaccepted months.
