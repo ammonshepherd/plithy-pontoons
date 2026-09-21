@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.39.0
+- Fixed plan detection so displayed suggested amounts count as an existing plan.
+- Copy previous month now copies displayed planned amounts, including suggestions.
+
 ## v0.38.0
 - Fixed applying monthly plans to the selected month.
 - Added copy-previous-month and CSV actions when an empty month needs a plan.
