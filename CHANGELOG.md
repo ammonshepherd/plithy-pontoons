@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.41.0
+- Suggested Planned amounts now appear in grey.
+- Added Accept current plan to save suggestions as explicit monthly plans.
+- Accepted, imported, and copied plans remain black.
+
 ## v0.40.0
 - Fixed month navigation producing Invalid Date when moving between months.
 - Updated the service-worker cache so GitHub Pages receives the latest app code.
