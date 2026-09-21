@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.35.0
+
+- Assignment amount edits now persist while typing, improving reliability on mobile keyboards and navigation.
+- Preserved cent-based validation and inline dashboard updates.
+
 ## v0.34.0
 
 - Replaced the account transaction modal with a full-page Accounts detail view.
