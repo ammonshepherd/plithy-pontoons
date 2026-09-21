@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.48.0
+- Disabled monthly editing, assignment, transaction entry, and amount clicks until the plan is accepted.
+- Faded all category metric labels and amounts while the month is locked.
+- Kept plan setup actions available during the locked state.
+
+## v0.47.0
+- Locked monthly budgeting actions until the month plan is accepted.
+- Faded all monthly metric labels and amounts while a month is locked.
+- Kept Accept Current Plan, CSV import, and Copy Previous Month available.
+
 ## v0.46.0
 - Made unaccepted Planned cells substantially more faded on desktop and mobile.
 - Kept accepted plans at normal contrast.
