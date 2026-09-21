@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.51.0
+- Added month-specific category layouts and ordering.
+- New months inherit the previous month's category layout.
+- Category and group changes now apply only to the selected month.
+- Historical category layouts remain available without changing transaction references.
+
 ## v0.50.0
 - Account cards and the Accounts page heading now properly hide while viewing account details.
 
