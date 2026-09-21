@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.42.0
+- Made accepted plan state explicit with per-month plan markers.
+- Kept Accept current plan visible for unaccepted months.
+- Future CSV and copy actions now remain tied to months without an accepted plan.
+
 ## v0.41.0
 - Suggested Planned amounts now appear in grey.
 - Added Accept current plan to save suggestions as explicit monthly plans.
