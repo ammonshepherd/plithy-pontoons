@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.37.0
+
+- Added assigned amounts beside categories in the Assign Money picker.
+- Added Available to assign as a source in the Move Money picker when unassigned funds exist.
+- Moving from Available to assign now increases the target category without requiring a category-to-category transfer.
+
 ## v0.36.0
 
 - Fixed month navigation so future months remain accessible.
