@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.49.0
+- Planned remains editable while a month is unaccepted so users can build a plan manually.
+- Manual, copied, and CSV-entered Planned values use medium contrast until the plan is accepted.
+- Accepting the plan remains the action that unlocks monthly budgeting.
+
 ## v0.48.0
 - Disabled monthly editing, assignment, transaction entry, and amount clicks until the plan is accepted.
 - Faded all category metric labels and amounts while the month is locked.
