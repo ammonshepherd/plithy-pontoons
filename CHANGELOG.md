@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.40.0
+- Fixed month navigation producing Invalid Date when moving between months.
+- Updated the service-worker cache so GitHub Pages receives the latest app code.
+- Clarified plan detection by using the same effective Planned amounts shown on the dashboard.
+
 ## v0.39.0
 - Fixed plan detection so displayed suggested amounts count as an existing plan.
 - Copy previous month now copies displayed planned amounts, including suggestions.

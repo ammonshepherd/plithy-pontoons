@@ -1,4 +1,4 @@
-const APP_VERSION = '0.39.0';
+const APP_VERSION = '0.40.0';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
 const DEFAULT_GROUPS = [
@@ -11,7 +11,7 @@ const DEFAULT_GROUPS = [
 let GROUPS = DEFAULT_GROUPS.map(([group,names])=>[group,[...names]]);
 const NOTES = {'Google Fi':'$129 without Tac; J&J pay $50','Tello':'$19/month starting in August'};
 const uid = (prefix='id') => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
-const monthKey = d => { const x = d ? new Date(`${d}T12:00:00`) : new Date(); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`; };
+const monthKey = d => { const x = d instanceof Date ? new Date(d.getTime()) : d ? new Date(`${d}T12:00:00`) : new Date(); if(Number.isNaN(x.getTime()))return monthKey(); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`; };
 const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
 const esc = s => String(s ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const cloneGroups = groups => groups.map(([group,names])=>[group,[...names]]);
