@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.46.0
+- Made unaccepted Planned cells substantially more faded on desktop and mobile.
+- Kept accepted plans at normal contrast.
+
 ## v0.45.0
 - Prevented an older cloud snapshot from overwriting newer local changes after refresh.
 - Added timestamp-aware synchronization for mobile transactions and other budget edits.
