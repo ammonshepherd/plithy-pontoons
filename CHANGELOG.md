@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.50.0
+- Account cards and the Accounts page heading now properly hide while viewing account details.
+
 ## v0.49.0
 - Planned remains editable while a month is unaccepted so users can build a plan manually.
 - Manual, copied, and CSV-entered Planned values use medium contrast until the plan is accepted.
