@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.44.0
+- Made unaccepted Planned cells and labels much lighter.
+- Changed the action to “Accept Current Plan” and styled it green.
+
 ## v0.43.0
 - Fixed the monthly plan status panel ignoring its hidden state because of its flex display rule.
 - The status panel now disappears after a plan is accepted or imported.
