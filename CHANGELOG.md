@@ -416,10 +416,4 @@
 - Restores account notes and transaction tag/reconciled metadata from the JSON metadata extension when optional columns are absent.
 - Keeps the app compatible with the current schema while retaining those supported details in Supabase.
 ## v0.65.0
-- Added a Supabase loading indicator during initial mobile and desktop startup.
-- Hides the unaccepted-plan message until the initial database load finishes.
-- Disables budget actions while the initial budget is loading.
-## v0.66.0
-- Prevents duplicate authentication startup loads.
-- Stops the loading state after 12 seconds if Supabase does not respond.
-- Shows a connection warning instead of leaving the app blocked indefinitely.
+- Restored the v0.64.0 startup behavior and removed the nonfunctional loading-screen experiment.
