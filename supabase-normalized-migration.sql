@@ -20,6 +20,13 @@ create table if not exists public.category_month_layouts (
 alter table public.transactions add column if not exists tag text not null default '';
 alter table public.transactions add column if not exists reconciled boolean not null default false;
 alter table public.accounts add column if not exists notes text not null default '';
+alter table public.accounts add column if not exists updated_at timestamptz not null default now();
+alter table public.categories add column if not exists updated_at timestamptz not null default now();
+alter table public.transactions add column if not exists updated_at timestamptz not null default now();
+alter table public.category_monthly add column if not exists updated_at timestamptz not null default now();
+alter table public.category_month_layouts add column if not exists updated_at timestamptz not null default now();
+alter table public.budget_metadata add column if not exists revision bigint not null default 0;
+alter table public.budget_metadata add column if not exists updated_by uuid references auth.users(id) on delete set null;
 
 alter table public.budget_metadata enable row level security;
 alter table public.category_month_layouts enable row level security;

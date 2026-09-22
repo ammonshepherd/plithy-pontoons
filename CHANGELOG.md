@@ -367,3 +367,8 @@
 - Added normalized metadata and monthly-layout storage for current BudgetBuddy features.
 - Kept browser local storage as an offline cache.
 - Updated wipe-budget to clear normalized data as well as the legacy snapshot.
+## v0.54.0
+- Changed normalized cloud saves to row-level upserts and targeted stale-row deletes.
+- Added optimistic revision checks to prevent one device from overwriting another device’s newer save.
+- Added a conflict message and automatic reload of the newest normalized budget when a conflict is detected.
+- Added updated timestamps to normalized entities.
