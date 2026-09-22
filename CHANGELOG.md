@@ -428,3 +428,6 @@
 - Increased the release version and cache-busting query strings.
 - Fixed category picker event binding so each picker only handles its own options.
 - Added guarded picker setup so one malformed or empty picker cannot stop the rest of the transaction modal from working.
+## v0.69.0
+- Shows each category's current Remaining amount in Add Transaction category pickers, including split rows.
+- Keeps categories selectable when their monthly Remaining amount is zero but category savings may cover the expense.
