@@ -424,3 +424,7 @@
 ## v0.67.0
 - Fixed the split toggle using valid modal markup and a pill-shaped control.
 - Fixed category-picker interaction and Cancel behavior in Add Transaction.
+## v0.68.0
+- Increased the release version and cache-busting query strings.
+- Fixed category picker event binding so each picker only handles its own options.
+- Added guarded picker setup so one malformed or empty picker cannot stop the rest of the transaction modal from working.
