@@ -404,3 +404,7 @@
 - Removed the stale-revision rejection from direct database saves.
 - Saves accepted-month records together with the rest of the normalized budget data.
 - Added cache-busting version parameters to the app and stylesheet URLs.
+## v0.62.0
+- Removed the dependency on `budget_metadata.revision` and `updated_by`, which are not present in the current Supabase schema.
+- Uses the existing `budget_metadata` columns while saving all normalized budget rows.
+- Displays database save errors instead of silently losing changes.
