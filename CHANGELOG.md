@@ -411,3 +411,7 @@
 ## v0.63.0
 - Removed optional `updated_at` fields from normalized writes so category reordering works with the current database schema.
 - Stores account notes and transaction tag/reconciled metadata in the existing `budget_metadata.data` JSON.
+## v0.64.0
+- Audited normalized reads and writes against the installed base schema.
+- Restores account notes and transaction tag/reconciled metadata from the JSON metadata extension when optional columns are absent.
+- Keeps the app compatible with the current schema while retaining those supported details in Supabase.
