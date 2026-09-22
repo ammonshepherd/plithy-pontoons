@@ -380,3 +380,8 @@
 - Added strong password enforcement for new account creation and password changes.
 - Added live password-strength meters with requirement indicators to both forms.
 - Requires at least 12 characters, uppercase, lowercase, a number, and a special character.
+## v0.57.0
+- Fixed mobile budget wipe behavior by clearing local data immediately, even when offline or cloud cleanup fails.
+- Added cleanup for normalized transfers, reconciliations, monthly records, and legacy snapshots.
+- Preserved an explicit wiped state so refresh does not recreate default categories.
+- Added automatic cloud cleanup retry when the device reconnects.
