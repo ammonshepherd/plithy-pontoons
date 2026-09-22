@@ -46,3 +46,9 @@ body{background:#f7f9fc;color:var(--ink)}.topbar{height:66px;background:var(--na
  .month-locked .metric.planned.suggested{opacity:.24}
 .month-locked .metric.planned{opacity:.68}.month-locked .metric.planned label,.month-locked .metric.planned .planned-link,.month-locked .metric.planned .inline-plan{color:#78867e}.month-locked .metric.planned.suggested{opacity:.24}
 .account-grid[hidden],.page-heading[hidden]{display:none}
+/* Supabase startup state */
+.budget-loading{display:flex;align-items:center;gap:12px;margin:0 0 24px;padding:16px 18px;border:1px solid #d8e4f2;border-radius:12px;background:#f4f8fc;color:var(--navy)}
+.budget-loading strong,.budget-loading small{display:block}
+.budget-loading small{margin-top:3px;color:var(--muted);font-size:12px}
+.loading-spinner{width:22px;height:22px;flex:0 0 22px;border:3px solid #cbd9eb;border-top-color:var(--blue);border-radius:50%;animation:budget-spin .8s linear infinite}
+@keyframes budget-spin{to{transform:rotate(360deg)}}

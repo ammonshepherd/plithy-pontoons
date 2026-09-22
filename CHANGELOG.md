@@ -415,3 +415,7 @@
 - Audited normalized reads and writes against the installed base schema.
 - Restores account notes and transaction tag/reconciled metadata from the JSON metadata extension when optional columns are absent.
 - Keeps the app compatible with the current schema while retaining those supported details in Supabase.
+## v0.65.0
+- Added a Supabase loading indicator during initial mobile and desktop startup.
+- Hides the unaccepted-plan message until the initial database load finishes.
+- Disables budget actions while the initial budget is loading.
