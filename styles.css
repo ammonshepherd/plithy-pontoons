@@ -46,3 +46,5 @@ body{background:#f7f9fc;color:var(--ink)}.topbar{height:66px;background:var(--na
  .month-locked .metric.planned.suggested{opacity:.24}
 .month-locked .metric.planned{opacity:.68}.month-locked .metric.planned label,.month-locked .metric.planned .planned-link,.month-locked .metric.planned .inline-plan{color:#78867e}.month-locked .metric.planned.suggested{opacity:.24}
 .account-grid[hidden],.page-heading[hidden]{display:none}
+/* Split transaction rows */
+.split-heading{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.split-heading small{color:var(--muted);font-size:11px}.split-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 28px;align-items:center;gap:8px;margin:8px 0}.split-row .category-picker{margin-top:0}.split-amount{width:100%;margin-top:0}.remove-split{padding:5px;color:var(--red);font-size:18px}.add-split{margin-top:5px}@media(max-width:430px){.split-row{grid-template-columns:minmax(0,1fr) 88px 24px;gap:5px}}

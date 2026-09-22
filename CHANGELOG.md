@@ -417,3 +417,7 @@
 - Keeps the app compatible with the current schema while retaining those supported details in Supabase.
 ## v0.65.0
 - Restored the v0.64.0 startup behavior and removed the nonfunctional loading-screen experiment.
+## v0.66.0
+- Added split transactions to the Add Transaction modal.
+- Requires split amounts to equal the transaction total before saving.
+- Stores each split as its own category transaction for accurate reporting.
