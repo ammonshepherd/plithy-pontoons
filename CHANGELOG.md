@@ -401,3 +401,6 @@
 - Removed browser local-storage budget persistence; authenticated budget state now loads from Supabase only.
 - Removed the offline service-worker cache and unregisters existing BudgetBuddy service workers.
 - Keeps budget changes in memory only until they are written to normalized Supabase tables.
+- Removed the stale-revision rejection from direct database saves.
+- Saves accepted-month records together with the rest of the normalized budget data.
+- Added cache-busting version parameters to the app and stylesheet URLs.
