@@ -393,3 +393,7 @@
 - Refreshes cloud data when the app returns to the foreground or regains focus.
 - Adds a periodic foreground sync so changes made on another device appear without signing out and back in.
 - Forces the service worker to install the latest app bundle instead of serving an older cached mobile build.
+## v0.60.0
+- Serializes queued budget saves before a foreground refresh so local plan and account changes cannot be overwritten before syncing.
+- Refreshes the Supabase user profile so display-name changes appear across devices.
+- Bumps the mobile cache again to ensure the synchronization fix is installed.
