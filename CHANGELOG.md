@@ -376,3 +376,7 @@
 - Moved Sign Out to the top of Settings.
 - Added a full User Account page linked from Settings.
 - Added editing for display name, email address, and password through Supabase Auth.
+## v0.56.0
+- Added strong password enforcement for new account creation and password changes.
+- Added live password-strength meters with requirement indicators to both forms.
+- Requires at least 12 characters, uppercase, lowercase, a number, and a special character.
