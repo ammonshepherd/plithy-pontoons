@@ -408,3 +408,6 @@
 - Removed the dependency on `budget_metadata.revision` and `updated_by`, which are not present in the current Supabase schema.
 - Uses the existing `budget_metadata` columns while saving all normalized budget rows.
 - Displays database save errors instead of silently losing changes.
+## v0.63.0
+- Removed optional `updated_at` fields from normalized writes so category reordering works with the current database schema.
+- Stores account notes and transaction tag/reconciled metadata in the existing `budget_metadata.data` JSON.
