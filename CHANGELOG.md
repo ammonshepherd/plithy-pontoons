@@ -431,3 +431,6 @@
 ## v0.69.0
 - Shows each category's current Remaining amount in Add Transaction category pickers, including split rows.
 - Keeps categories selectable when their monthly Remaining amount is zero but category savings may cover the expense.
+## v0.70.0
+- Fixed category selection in split transaction rows with delegated picker handling.
+- Added a live Remaining to split / Over by indicator beneath the split categories.
