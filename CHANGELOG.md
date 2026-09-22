@@ -372,3 +372,7 @@
 - Added optimistic revision checks to prevent one device from overwriting another device’s newer save.
 - Added a conflict message and automatic reload of the newest normalized budget when a conflict is detected.
 - Added updated timestamps to normalized entities.
+## v0.55.0
+- Moved Sign Out to the top of Settings.
+- Added a full User Account page linked from Settings.
+- Added editing for display name, email address, and password through Supabase Auth.
