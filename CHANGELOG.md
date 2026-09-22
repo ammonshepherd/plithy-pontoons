@@ -385,3 +385,7 @@
 - Added cleanup for normalized transfers, reconciliations, monthly records, and legacy snapshots.
 - Preserved an explicit wiped state so refresh does not recreate default categories.
 - Added automatic cloud cleanup retry when the device reconnects.
+## v0.58.0
+- Synchronized accepted-month status through the normalized `budget_months` table.
+- Loaded accepted-month markers separately on startup so desktop and mobile show the same plan status.
+- Backfilled accepted-month markers from the existing plan metadata during normal saves.
