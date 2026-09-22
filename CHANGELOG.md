@@ -389,3 +389,7 @@
 - Synchronized accepted-month status through the normalized `budget_months` table.
 - Loaded accepted-month markers separately on startup so desktop and mobile show the same plan status.
 - Backfilled accepted-month markers from the existing plan metadata during normal saves.
+## v0.59.0
+- Refreshes cloud data when the app returns to the foreground or regains focus.
+- Adds a periodic foreground sync so changes made on another device appear without signing out and back in.
+- Forces the service worker to install the latest app bundle instead of serving an older cached mobile build.
