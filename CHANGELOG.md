@@ -397,3 +397,7 @@
 - Serializes queued budget saves before a foreground refresh so local plan and account changes cannot be overwritten before syncing.
 - Refreshes the Supabase user profile so display-name changes appear across devices.
 - Bumps the mobile cache again to ensure the synchronization fix is installed.
+## v0.61.0
+- Removed browser local-storage budget persistence; authenticated budget state now loads from Supabase only.
+- Removed the offline service-worker cache and unregisters existing BudgetBuddy service workers.
+- Keeps budget changes in memory only until they are written to normalized Supabase tables.
