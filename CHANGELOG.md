@@ -421,3 +421,6 @@
 - Added split transactions to the Add Transaction modal.
 - Requires split amounts to equal the transaction total before saving.
 - Stores each split as its own category transaction for accurate reporting.
+## v0.67.0
+- Fixed the split toggle using valid modal markup and a pill-shaped control.
+- Fixed category-picker interaction and Cancel behavior in Add Transaction.
