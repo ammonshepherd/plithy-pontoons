@@ -56,3 +56,10 @@ test('assigned inline edits flush their cloud save when committed', () => {
   assert.match(app, /function flushCloudSave\(\)/);
   assert.match(app, /beginInlineAssignment=function[\s\S]*void flushCloudSave\(\)/);
 });
+
+test('settings drag handles are the draggable elements', () => {
+  assert.match(app, /function normalizeSettingsDragHandles\(root\)/);
+  assert.match(app, /row\.setAttribute\('draggable','false'\)/);
+  assert.match(app, /data-settings-drag-handle\].*setAttribute\('draggable','true'\)/);
+  assert.match(app, /data-settings-group-handle\].*setAttribute\('draggable','true'\)/);
+});

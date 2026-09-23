@@ -465,3 +465,6 @@
 ## v0.80.0
 - Fixed Assigned inline edits so committed changes immediately flush to Supabase instead of waiting for the delayed save queue.
 - Added regression coverage for Assigned persistence rows and save flushing.
+## v0.81.0
+- Fixed Settings drag-and-drop by making the visible category and group handles the draggable elements.
+- Kept category rows and groups as drop targets for reordering and cross-group moves.
