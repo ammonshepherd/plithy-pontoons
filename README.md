@@ -19,3 +19,14 @@ Enable Pages for the `main` branch in the repository settings. The app is static
 ## Supabase setup
 
 `supabase-schema.sql` contains the hosted database schema and Row Level Security policies. Run it in the Supabase SQL Editor after creating the project. If you already ran that file, run `supabase-sync-migration.sql` to add the cloud snapshot table used by offline sync. `supabase-config.js` contains only the public browser key; never place a service-role key or database password in the repository.
+
+## Tests
+
+Run the automated workflow and semantic checks before publishing changes:
+
+```bash
+npm test
+npm run check
+```
+
+The dependency-free tests cover transaction and split validation, grouped category selects, category and group changes, monthly plans and approvals, available-to-assign calculations, normalized persistence rows, user-account update payloads, and key semantic HTML/CSS contracts.

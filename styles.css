@@ -52,3 +52,52 @@ body{background:#f7f9fc;color:var(--ink)}.topbar{height:66px;background:var(--na
 .split-toggle-field{display:flex;align-items:center;justify-content:space-between;gap:12px}.pill-toggle{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px;min-width:88px;border:1px solid var(--line);border-radius:999px;background:#edf1f5;color:var(--muted);font-size:11px;font-weight:750}.pill-toggle span{padding:5px 9px;border-radius:999px;text-align:center}.pill-toggle.on{background:#e4f7ef;color:var(--green)}.pill-toggle.on span:last-child{background:var(--green);color:#fff}.pill-toggle:not(.on) span:first-child{background:#fff;color:var(--navy)}
 .split-remaining{margin:0 0 8px;color:var(--green);font-size:12px;font-weight:700}.split-remaining.over{color:var(--red)}
 .transaction-type-field,.transaction-type-field legend,#tx-splits,#tx-splits legend{border:0;padding:0;margin:0}.transaction-type-field legend,#tx-splits legend{font-size:12px;color:var(--muted);margin-bottom:5px}.transaction-type-toggle{display:flex;gap:0}.transaction-type-toggle label{position:relative;flex:1}.transaction-type-toggle input,.pill-checkbox input{position:absolute;opacity:0;pointer-events:none}.transaction-type-toggle span{display:block;padding:10px;text-align:center;border:1px solid var(--line);background:#f4f6f5;color:var(--muted);font-weight:750}.transaction-type-toggle label:first-child span{border-radius:999px 0 0 999px;color:var(--red)}.transaction-type-toggle label:last-child span{border-radius:0 999px 999px 0;color:var(--green)}.transaction-type-toggle input:checked+span{background:#fff;border-color:currentColor;box-shadow:0 0 0 2px currentColor inset}.split-toggle-control{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--ink);font-size:12px}.pill-checkbox{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px;min-width:88px;border:1px solid var(--line);border-radius:999px;background:#edf1f5;color:var(--muted);font-size:11px;font-weight:750}.pill-checkbox span{padding:5px 9px;border-radius:999px;text-align:center}.pill-checkbox input:not(:checked)~span:first-of-type{background:#fff;color:var(--navy)}.pill-checkbox input:checked~span:last-of-type{background:var(--green);color:#fff}.category-native-select{width:100%;margin-top:5px}.split-help{margin:0 0 8px;color:var(--muted);font-size:11px}
+
+/* Semantic category data table. The nested rules keep the desktop and mobile variants together. */
+.budget-table-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  .budget-table {
+    width: 100%;
+    min-width: 660px;
+    border-collapse: collapse;
+    caption { padding: 0; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: middle; }
+    thead th { background: #f8faf8; color: var(--muted); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+    thead th:first-child, tbody th { text-align: left; }
+    tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fbfefc; }
+    .category-cell { min-width: 190px; font-weight: 650; }
+    .category-note { display: block; margin-top: 2px; font-size: 10px; font-weight: 400; color: var(--muted); }
+    .metric button, .metric strong { font-size: 14px; font-weight: 400; }
+    .metric.savings { background: linear-gradient(145deg,#f5efff,#e9dcff); color: #9b79d0; }
+    .metric.savings strong { color: #9b79d0; text-shadow: 0 0 5px #cfb8fa; }
+    .metric.spent strong { color: var(--red); }
+    .metric.remaining button { color: var(--green); }
+    .metric.assigned button, .metric.planned button { color: var(--blue); }
+    .month-locked .metric:not(.planned) { opacity: .24; }
+    .month-locked .metric.planned { opacity: .68; }
+  }
+}
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (max-width: 780px) {
+  .budget-table-wrap { border: 0; border-radius: 0; background: transparent; overflow: visible;
+    .budget-table { min-width: 0; display: block;
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+      tbody, tr { display: block; }
+      tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 0; margin: 7px 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+      th, td { display: block; min-width: 0; padding: 5px 6px; border: 0; }
+      .category-cell { grid-column: 1 / -1; min-width: 0; padding: 8px; background: #f7f8fc; }
+      td::before { display: block; margin-bottom: 1px; color: var(--muted); content: attr(data-label); font-size: 8px; letter-spacing: .06em; text-transform: uppercase; }
+      .metric { text-align: center; }
+      .metric button, .metric strong { display: block; width: 100%; text-align: center; font-size: 14px; }
+      .metric.savings { grid-column: 3; grid-row: 2 / span 2; display: flex; flex-direction: column; justify-content: center; }
+      .metric.remaining { grid-column: 1; grid-row: 2; background: #fff7dc; }
+      .metric.spent { grid-column: 2; grid-row: 2; background: #fff7dc; }
+      .metric.assigned { grid-column: 1; grid-row: 3; background: #eef4fb; }
+      .metric.planned { grid-column: 2; grid-row: 3; background: #eef4fb; }
+    }
+  }
+}

@@ -438,3 +438,9 @@
 - Rebuilt Add Transaction as a semantic HTML form.
 - Replaced custom transaction category buttons with grouped native select controls.
 - Replaced type and split controls with native radio/checkbox inputs styled to match the app.
+## v0.72.0
+- Audited the interface for semantic HTML5 structure.
+- Rebuilt the dashboard envelope display as an accessible semantic table with scoped headers and responsive mobile styling.
+- Converted plan and settings panels to semantic sections.
+- Added a dependency-free Node test suite covering transactions, splits, groups, categories, plans, approvals, persistence, user updates, and semantic structure.
+- Added modern nested CSS for the dashboard table and responsive layout.
