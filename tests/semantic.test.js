@@ -131,3 +131,11 @@ test('insufficient Assigned edits open a reallocation modal', () => {
   assert.match(app, /Move money from another assigned category/);
   assert.match(app, /beginInlineAssignment=function[\s\S]*openReassignMoney\(name,next\)/);
 });
+
+test('monthly plan loading can recover from optional table failures', () => {
+  assert.match(app, /async function recoverPlanFromCloud\(\)/);
+  assert.match(app, /query\('categories'\)/);
+  assert.match(app, /query\('category_monthly'\)/);
+  assert.match(app, /Could not load monthly plan/);
+  assert.match(app, /pullNormalizedState=async function\(\)\{await pullWithPlanRecovery\(\);await recoverPlanFromCloud\(\);\}/);
+});

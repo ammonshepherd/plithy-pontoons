@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.91.0
+- Hardened monthly plan loading against optional Supabase table/schema failures.
+- Added a focused recovery query for categories and monthly plan rows so the dashboard can still load the plan.
+- Added a specific warning when the essential plan tables cannot be read.
+
 ## v0.51.0
 - Added month-specific category layouts and ordering.
 - New months inherit the previous month's category layout.

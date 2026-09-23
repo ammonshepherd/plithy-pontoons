@@ -1,4 +1,4 @@
-const APP_VERSION = '0.90.0';
+const APP_VERSION = '0.91.0';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -258,6 +258,69 @@ const accountDetailColumnOrderRender=renderAccountDetail;
 renderAccountDetail=function(id){accountDetailColumnOrderRender(id);const table=document.querySelector('#account-detail-view .account-detail-table table');const header=table?.querySelector('thead tr');if(!header)return;const cells=[...header.children];if(cells[3]?.textContent==='Category'&&cells[4]?.textContent==='Amount')header.append(cells[4],cells[3]);};
 function openReassignMoney(target,desired){const current=Number(assignments()[target]||0),available=Math.max(0,availableToAssign()),needed=Math.max(0,Number(desired)-current-available),sources=orderedCategoryNames().filter(name=>name!==target&&Number(assignments()[name]||0)>0),selected=sources[0]||'';const sourceAmount=name=>Number(assignments()[name]||0);const picker=sources.length?`<label class="form-field full">Move from${categoryPickerMarkup(selected,'assign',false,target,false)}</label>`:'';const m=modal('No more money to assign',`<p class="modal-intro">There is not enough money available to assign <strong>${money(Number(desired))}</strong> to this category.</p><p class="modal-intro">Move money from another assigned category to reassign it here.</p>${sources.length?`<div class="form-grid">${picker}<label class="form-field full">Amount to move<input id="reassign-amount" type="number" min="0.01" max="${Math.max(0,sourceAmount(selected))}" step="0.01" value="${needed>0?Math.min(needed,sourceAmount(selected)).toFixed(2):''}"></label></div>`:'<p class="notice">No other category currently has assigned money available to move.</p>'}<div class="modal-actions"><button class="secondary" data-close>Cancel</button>${sources.length?'<button class="primary" id="save-reassign">Move Money</button>':''}</div>`);if(sources.length){setupCategoryPicker(m,'assign');m.querySelectorAll('[data-category-option]').forEach(option=>{if(Number(assignments()[option.dataset.categoryOption]||0)<=0)option.disabled=true;option.addEventListener('click',()=>{if(!option.disabled)m.querySelector('#reassign-amount').max=sourceAmount(option.dataset.categoryOption);});});m.querySelector('#save-reassign').onclick=()=>{const from=m.querySelector('#assign-category').value,amount=Number(m.querySelector('#reassign-amount').value),source=sourceAmount(from),unassigned=Math.min(available,Math.max(0,Number(desired)-current));if(!from||!amount||amount>source){appMessage('Not enough assigned money','The selected category does not have enough assigned money to move.','warning');return;}state.assignments[activeMonth]??={};state.assignments[activeMonth][from]=source-amount;state.assignments[activeMonth][target]=current+unassigned+amount;save();closeModal();render();};}m.querySelector('[data-close]').onclick=closeModal;}
 beginInlineAssignment=function(button,name){const current=Number(assignments()[name]||0);const input=document.createElement('input');input.className='inline-assignment';input.dataset.assignCategory=name;input.type='number';input.min='0';input.step='0.01';input.value=current.toFixed(2);button.replaceWith(input);input.focus();input.select();let finished=false;let savedValue=current;const restore=()=>{const restored=document.createElement('button');restored.type='button';restored.className='assigned-link';restored.dataset.assignCategory=name;restored.textContent=money(savedValue);input.replaceWith(restored);restored.onclick=()=>beginInlineAssignment(restored,name);};const persistValue=value=>{if(!Number.isFinite(value)||value<0)return false;const currentAssigned=Number(assignments()[name]||0);const availableCents=Math.round((availableToAssign()+currentAssigned)*100),valueCents=Math.round(value*100);if(valueCents>availableCents)return false;state.assignments[activeMonth]??={};state.assignments[activeMonth][name]=valueCents/100;savedValue=valueCents/100;save();return true;};const finish=(saveIt,advance=false)=>{if(finished)return;finished=true;const next=Number(input.value);if(!saveIt){restore();return;}if(!persistValue(next)){restore();openReassignMoney(name,next);return;}void flushCloudSave();const assignedButton=document.createElement('button');assignedButton.type='button';assignedButton.className='assigned-link';assignedButton.dataset.assignCategory=name;assignedButton.textContent=money(savedValue);input.replaceWith(assignedButton);assignedButton.onclick=()=>beginInlineAssignment(assignedButton,name);if(advance){const orderedButtons=[...document.querySelectorAll('[data-assign-category]')];const nextButton=orderedButtons[orderedButtons.findIndex(item=>item===assignedButton)+1];if(nextButton)beginInlineAssignment(nextButton,nextButton.dataset.assignCategory);}};input.oninput=()=>persistValue(Number(input.value));input.onchange=()=>finish(true);input.onblur=()=>finish(true);input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();finish(true,true);}if(e.key==='Escape'){e.preventDefault();finish(false);}};};
+/*
+ * Plan recovery: loading every normalized table in one Promise.all made the
+ * dashboard blank when an optional table had an RLS/schema problem. Categories
+ * and category_monthly are the minimum needed to show a plan, so reload those
+ * independently and keep the Supabase error tied to the table that failed.
+ */
+async function recoverPlanFromCloud(){
+  if(!window.currentBudgetUser||!supabaseClient||!navigator.onLine)return false;
+  let householdId;
+  try{householdId=await getHouseholdId();}catch(error){appMessage('Could not load monthly plan',error.message||'Supabase could not find your household.','warning');return false;}
+  if(!householdId)return false;
+  const query=async table=>{const result=await supabaseClient.from(table).select('*').eq('household_id',householdId);if(result.error){const error=new Error(`${table}: ${result.error.message}`);error.table=table;throw error;}return result.data||[];};
+  try{
+    const [categoryRows,monthlyRows,metadataResult]=await Promise.all([
+      query('categories'),
+      query('category_monthly'),
+      supabaseClient.from('budget_metadata').select('data').eq('household_id',householdId).maybeSingle()
+    ]);
+    if(metadataResult.error)console.warn(`Optional budget_metadata query failed: ${metadataResult.error.message}`);
+    const metadata=metadataResult.data?.data||{};
+    if(!categoryRows.length){
+      if(metadata.wiped){state=blankState();state.wiped=true;GROUPS=[];render();}
+      return false;
+    }
+    const previousCategories=state.categories||{};
+    const previousAssignments=state.assignments||{};
+    state.categories={};
+    state.assignments=previousAssignments;
+    state.groups=metadata.groups||state.groups||[];
+    state.tags=metadata.tags||state.tags||[];
+    state.openingFunds=Number(metadata.openingFunds??state.openingFunds??0);
+    state.openingFundsMonth=metadata.openingFundsMonth||state.openingFundsMonth||'';
+    state.planMonths={...(state.planMonths||{}),...(metadata.planMonths||{})};
+    state.categoryOrder=metadata.categoryOrder||state.categoryOrder||{};
+    state.monthLayouts=metadata.monthLayouts||state.monthLayouts||{};
+    for(const row of categoryRows){
+      const old=previousCategories[row.name]||{};
+      state.categories[row.name]={...old,id:row.id,name:row.name,group:row.group_name,note:row.note||'',targetMonth:row.target_month?String(row.target_month):'',targetAmount:row.target_amount??'',savings:Number(old.savings||0),plans:{...(old.plans||{})}};
+    }
+    const categoryById=Object.fromEntries(Object.values(state.categories).map(category=>[category.id,category]));
+    for(const row of monthlyRows){
+      const category=categoryById[row.category_id];
+      if(!category)continue;
+      const month=String(row.month_start).slice(0,7);
+      category.plans[month]=Number(row.planned??0);
+      state.assignments[month]??={};
+      state.assignments[month][category.name]=Number(row.assigned??0);
+    }
+    if(!state.groups.length){
+      state.groups=[...new Set(categoryRows.map(row=>row.group_name).filter(Boolean))].map(group=>[group,categoryRows.filter(row=>row.group_name===group).map(row=>row.name)]);
+    }
+    GROUPS=cloneGroups(state.groups);
+    render();
+    return monthlyRows.length>0;
+  }catch(error){
+    console.warn('Could not recover monthly plan from Supabase:',error.message);
+    appMessage('Could not load monthly plan',error.message||'Supabase returned an error while loading the plan.','warning');
+    return false;
+  }
+}
+const pullWithPlanRecovery=pullNormalizedState;
+pullNormalizedState=async function(){await pullWithPlanRecovery();await recoverPlanFromCloud();};
+
 setup();
 showView(rememberedView(),rememberedView()==='user-account-view'?'settings-view':rememberedView());
 setupImportControls();
