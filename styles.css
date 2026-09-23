@@ -98,6 +98,7 @@ input:focus, select:focus, button:focus-visible { outline: 3px solid #4f8df733; 
 .budget-table .metric.spent strong { color: var(--red); }
 .budget-table .metric.remaining button { color: var(--green); }
 .budget-table .metric.assigned button, .budget-table .metric.planned button { color: var(--blue); }
+.budget-table .metric.planned button { color: var(--ink); }
 .budget-table .metric.savings strong { color: #9b79d0; font-size: 16px; font-weight: 750; text-shadow: 0 0 5px #cfb8fa, 0 0 12px #eadfff; }
 .budget-table .metric.savings strong::before { content: '✦ '; color: #c8aaf2; font-size: 12px; }
 .budget-table .metric.savings strong::after { content: ' ✦'; color: #c8aaf2; font-size: 12px; }

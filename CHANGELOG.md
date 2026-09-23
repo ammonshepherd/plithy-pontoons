@@ -460,3 +460,5 @@
 - Hid dashboard table captions visually on mobile while preserving them for accessibility.
 ## v0.78.0
 - Enabled long mobile category names to wrap naturally, including unbroken names, without horizontal overflow.
+## v0.79.0
+- Changed normal Planned amounts to black while keeping suggested plans faded.
