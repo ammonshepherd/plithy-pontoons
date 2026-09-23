@@ -495,3 +495,7 @@
 ## v0.89.0
 - Aligns Activity and Account amount headers with their values.
 - Reduces mobile transaction table padding and minimum widths for a more compact view.
+## v0.90.0
+- Shows a reallocation modal when an Assigned edit exceeds available money.
+- Allows moving assigned money from another category into the edited category.
+- Displays source categories in the styled picker with their Assigned balances.

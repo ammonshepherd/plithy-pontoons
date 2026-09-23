@@ -123,3 +123,11 @@ test('transaction amount cells use consistent right alignment', () => {
   assert.match(css, /\.table-wrap th:nth-child\(3\), \.account-transaction-list th:nth-child\(4\) \{ text-align: right; \}/);
   assert.match(css, /\.table-wrap table, \.account-transaction-list table \{ min-width: 560px; table-layout: fixed; \}/);
 });
+
+test('insufficient Assigned edits open a reallocation modal', () => {
+  assert.match(app, /function openReassignMoney\(target,desired\)/);
+  assert.match(app, /No more money to assign/);
+  assert.match(app, /categoryPickerMarkup\(selected,'assign',false,target,false\)/);
+  assert.match(app, /Move money from another assigned category/);
+  assert.match(app, /beginInlineAssignment=function[\s\S]*openReassignMoney\(name,next\)/);
+});
