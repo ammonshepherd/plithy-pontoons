@@ -1,4 +1,4 @@
-const APP_VERSION = '0.91.0';
+const APP_VERSION = '0.92.0';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -320,6 +320,60 @@ async function recoverPlanFromCloud(){
 }
 const pullWithPlanRecovery=pullNormalizedState;
 pullNormalizedState=async function(){await pullWithPlanRecovery();await recoverPlanFromCloud();};
+
+/* CSV plans are explicit plans: persist the selected month marker along with
+ * category_monthly values so the month is accepted after reload. */
+importCsvFile=function(event){
+  const file=event.target.files?.[0];
+  if(!file)return;
+  const importMonth=document.getElementById('csv-import-month')?.value||activeMonth;
+  const finish=()=>{event.target.value='';};
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      if(!/^\d{4}-\d{2}$/.test(importMonth))throw new Error('Choose a valid month for this plan.');
+      const rows=parseCsv(String(reader.result));
+      if(!rows.length)throw new Error('The CSV file is empty.');
+      const headers=rows[0].map(header=>header.toLowerCase().replace(/\s+/g,' ').trim());
+      const categoryIndex=headers.indexOf('category'),amountIndex=headers.indexOf('monthly plan amount'),groupIndex=headers.indexOf('group');
+      if(categoryIndex<0||amountIndex<0||groupIndex<0)throw new Error('The CSV must contain Category, Monthly plan amount, and Group columns.');
+      let imported=0;
+      for(const row of rows.slice(1)){
+        const name=(row[categoryIndex]||'').trim();
+        const group=(row[groupIndex]||'').trim();
+        const amountText=(row[amountIndex]||'').replace(/[$,]/g,'').trim();
+        if(!name)continue;
+        const amount=Number(amountText||0);
+        if(!Number.isFinite(amount)||amount<0)throw new Error(`Invalid amount for ${name}.`);
+        let existing=category(name);
+        if(!existing){
+          existing={id:uid('cat'),name,group:group||'Other Stuff',note:'',targetMonth:'',targetAmount:'',savings:0,plans:{}};
+          state.categories[name]=existing;
+        }
+        existing.plans??={};
+        existing.plans[importMonth]=amount;
+        if(group){
+          if(!state.groups.some(([groupName])=>groupName===group))state.groups.push([group,[]]);
+          addNameToMonthLayout(name,group,importMonth);
+        }else addNameToMonthLayout(name,existing.group||'Other Stuff',importMonth);
+        imported++;
+      }
+      if(!imported)throw new Error('The CSV did not contain any category rows.');
+      state.planMonths??={};
+      state.planMonths[importMonth]=true;
+      state.wiped=false;
+      activeMonth=importMonth;
+      GROUPS=cloneGroups(state.groups);
+      save();
+      render();
+      void flushCloudSave();
+      appMessage('Plans imported',`Imported ${imported} monthly plan${imported===1?'':'s'} for ${new Date(`${importMonth}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'})}.`,'success');
+    }catch(error){appMessage('Could not import plans',error.message||'Could not read that CSV file.','warning');}
+    finish();
+  };
+  reader.onerror=()=>{appMessage('Could not import plans','The CSV file could not be read.','warning');finish();};
+  reader.readAsText(file);
+};
 
 setup();
 showView(rememberedView(),rememberedView()==='user-account-view'?'settings-view':rememberedView());

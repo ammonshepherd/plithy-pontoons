@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.92.0
+- Fixed CSV monthly plan imports not marking the selected month as an accepted plan.
+- CSV imports now apply group layout changes to the selected month and flush their Supabase save immediately.
+
 ## v0.91.0
 - Hardened monthly plan loading against optional Supabase table/schema failures.
 - Added a focused recovery query for categories and monthly plan rows so the dashboard can still load the plan.

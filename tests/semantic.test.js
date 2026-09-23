@@ -139,3 +139,10 @@ test('monthly plan loading can recover from optional table failures', () => {
   assert.match(app, /Could not load monthly plan/);
   assert.match(app, /pullNormalizedState=async function\(\)\{await pullWithPlanRecovery\(\);await recoverPlanFromCloud\(\);\}/);
 });
+
+test('CSV monthly plans mark the selected month accepted and flush cloud save', () => {
+  assert.match(app, /importCsvFile=function\(event\)/);
+  assert.match(app, /state\.planMonths\[importMonth\]=true/);
+  assert.match(app, /void flushCloudSave\(\)/);
+  assert.match(app, /addNameToMonthLayout\(name,group,importMonth\)/);
+});
