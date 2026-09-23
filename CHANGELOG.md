@@ -458,3 +458,5 @@
 - Preserved the semantic envelope table, transaction form controls, account details, settings, and responsive navigation.
 ## v0.77.0
 - Hid dashboard table captions visually on mobile while preserving them for accessibility.
+## v0.78.0
+- Enabled long mobile category names to wrap naturally, including unbroken names, without horizontal overflow.

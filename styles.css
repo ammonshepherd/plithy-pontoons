@@ -84,7 +84,7 @@ input:focus, select:focus, button:focus-visible { outline: 3px solid #4f8df733; 
 .budget-table tbody tr.envelope { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto; gap: 0; margin: 7px 0; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .budget-table th, .budget-table td { display: block; min-width: 0; padding: 0; border: 0; vertical-align: middle; }
 .budget-table .category-cell { grid-column: 1; grid-row: 1; min-width: 0; padding: 7px 8px; background: #f7f8fc; text-align: left; }
-.budget-table .category-link { display: block; max-width: 25ch; padding: 0; overflow-wrap: anywhere; border: 0; background: transparent; color: var(--ink); font-size: 15px; font-weight: 400; line-height: 1.2; text-align: left; }
+.budget-table .category-link { display: block; max-width: 25ch; padding: 0; overflow: visible; overflow-wrap: anywhere; word-break: break-word; white-space: normal; border: 0; background: transparent; color: var(--ink); font-size: 15px; font-weight: 400; line-height: 1.2; text-align: left; }
 .budget-table .category-link:hover { color: var(--blue); text-decoration: underline; }
 .budget-table .category-note { display: block; margin-top: 2px; overflow: hidden; color: var(--muted); font-size: 9px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
 .budget-table td::before { display: block; margin-bottom: 0; color: var(--muted); content: attr(data-label); font-size: 8px; letter-spacing: .06em; text-align: center; text-transform: uppercase; }
