@@ -43,6 +43,15 @@ test('new dashboard CSS uses nested rules and responsive table semantics', () =>
   assert.match(css, /\.visually-hidden\s*\{/);
   assert.match(css, /\.budget-table \.category-link[^{]*\{[^}]*overflow-wrap: anywhere[^}]*word-break: break-word[^}]*white-space: normal/);
   assert.match(css, /\.budget-table \.metric\.planned button \{ color: var\(--ink\); \}/);
+  assert.match(css, /\.budget-table \.metric\.remaining \{ grid-column: 2; grid-row: 2; \}/);
+  assert.match(css, /\.budget-table \.metric\.planned \{ grid-column: 3; grid-row: 1; \}/);
+});
+
+test('selected app view is remembered across refreshes', () => {
+  assert.match(app, /const VIEW_STORAGE_KEY = 'budgetbuddy-active-view'/);
+  assert.match(app, /localStorage\.setItem\(VIEW_STORAGE_KEY,viewId\)/);
+  assert.match(app, /function rememberedView\(\)/);
+  assert.match(app, /setup\(\);[\s\S]*showView\(rememberedView\(\)/);
 });
 
 test('cloud refresh uses lifecycle events without interval polling', () => {

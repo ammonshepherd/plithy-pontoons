@@ -475,3 +475,6 @@
 ## v0.83.0
 - Groups split transactions into one bank-style parent transaction on the Accounts detail page.
 - Added collapsible split details while keeping selection, reconciliation, and deletion on the parent transaction.
+## v0.84.0
+- Reordered mobile envelope values: Category, Assigned, Planned on top; Saved, Remaining, Spent below.
+- Remembers the selected app view across page refreshes.
