@@ -444,3 +444,6 @@
 - Converted plan and settings panels to semantic sections.
 - Added a dependency-free Node test suite covering transactions, splits, groups, categories, plans, approvals, persistence, user updates, and semantic structure.
 - Added modern nested CSS for the dashboard table and responsive layout.
+## v0.73.0
+- Aligned desktop dashboard headings and amount columns with fixed semantic table columns.
+- Restored the mobile envelope layout to Category/Saved, Assigned/Planned, and Remaining/Spent.

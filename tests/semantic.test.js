@@ -20,7 +20,8 @@ test('document uses semantic page landmarks and native forms', () => {
 test('dashboard category renderer uses a semantic table with scoped headers', () => {
   assert.match(app, /<table class="budget-table">/);
   assert.match(app, /<caption class="visually-hidden">/);
-  assert.match(app, /<th scope="col">Category<\/th>/);
+  assert.match(app, /<th scope="col"><span class="visually-hidden">Category<\/span><\/th>/);
+  assert.match(app, /<colgroup><col class="category-column"><col span="5" class="amount-column"><\/colgroup>/);
   assert.match(app, /<th scope="row" class="category-cell">/);
 });
 
