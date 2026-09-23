@@ -40,6 +40,7 @@ test('new dashboard CSS uses nested rules and responsive table semantics', () =>
   assert.match(css, /\.budget-table tbody tr\.envelope \{ display: table-row/);
   assert.doesNotMatch(css, /@media\s*\(max-width/);
   assert.doesNotMatch(css, /\.category-header|\.kebab|\.category-name/);
+  assert.match(css, /\.visually-hidden\s*\{/);
 });
 
 test('cloud refresh uses lifecycle events without interval polling', () => {

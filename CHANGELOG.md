@@ -456,3 +456,5 @@
 - Audited and consolidated the stylesheet to remove conflicting legacy dashboard and modal rules.
 - Reorganized responsive styles mobile-first, with desktop enhancements in min-width media queries.
 - Preserved the semantic envelope table, transaction form controls, account details, settings, and responsive navigation.
+## v0.77.0
+- Hid dashboard table captions visually on mobile while preserving them for accessibility.
