@@ -468,3 +468,7 @@
 ## v0.81.0
 - Fixed Settings drag-and-drop by making the visible category and group handles the draggable elements.
 - Kept category rows and groups as drop targets for reordering and cross-group moves.
+## v0.82.0
+- Groups split transactions into one bank-style parent transaction on Activity.
+- Added a collapsible split breakdown showing each category and amount.
+- Persisted split-group metadata so grouping survives refreshes and device changes.

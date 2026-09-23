@@ -63,3 +63,11 @@ test('settings drag handles are the draggable elements', () => {
   assert.match(app, /data-settings-drag-handle\].*setAttribute\('draggable','true'\)/);
   assert.match(app, /data-settings-group-handle\].*setAttribute\('draggable','true'\)/);
 });
+
+test('activity groups split transactions into a collapsible parent row', () => {
+  assert.match(app, /function transactionGroups\(rows\)/);
+  assert.match(app, /class="split-toggle"/);
+  assert.match(app, /class="split-details-row"/);
+  assert.match(app, /splitBreakdownMarkup\(group\.items\)/);
+  assert.match(app, /transactionExtras.*splitGroupId/);
+});

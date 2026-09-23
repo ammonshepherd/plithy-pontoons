@@ -96,6 +96,9 @@ test('expense, income, and split transaction parts are validated', () => {
   assert.throws(() => api.transactionPartsFromValues({ type: 'expense', split: true, amount: 20, splitCategories: ['Groceries', 'General'], splitAmounts: [12, 7] }), /equal/);
   const records = api.transactionRecordsFromParts([{ category: 'Groceries', amount: 20 }, { category: 'General', amount: 5 }], { type: 'expense', date: '2026-09-23', payee: 'Store', accountId: 'account-1', cleared: true, tag: 'Test' });
   assert.equal(records.length, 2);
+  assert.ok(records[0].splitGroupId);
+  assert.equal(records[0].splitGroupId, records[1].splitGroupId);
+  assert.deepEqual(records.map(record => record.splitIndex), [0, 1]);
   assert.deepEqual(JSON.parse(JSON.stringify(records.map(({ type, date, amount, category, cleared, tag }) => ({ type, date, amount, category, cleared, tag })))), [
     { type: 'expense', date: '2026-09-23', amount: 20, category: 'Groceries', cleared: true, tag: 'Test' },
     { type: 'expense', date: '2026-09-23', amount: 5, category: 'General', cleared: true, tag: 'Test' }
