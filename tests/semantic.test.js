@@ -103,3 +103,10 @@ test('transaction editing uses the add-transaction form and supports deletion', 
   assert.match(app, /id="delete-edit-transaction"/);
   assert.match(app, /data-edit-account-transaction/);
 });
+
+test('split detail rows align category and amount with each table layout', () => {
+  assert.match(app, /splitBreakdownMarkup=function\(items\)[\s\S]*split-detail-activity/);
+  assert.match(app, /splitBreakdownMarkup=function\(items\)[\s\S]*split-detail-account/);
+  assert.match(css, /\.account-detail-table \.split-detail-table \.split-detail-activity \{ display: none; \}/);
+  assert.match(css, /\.account-detail-table \.split-detail-table \.split-detail-account \{ display: table-row; \}/);
+});

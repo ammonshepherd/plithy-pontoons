@@ -124,6 +124,13 @@ tr:last-child td { border-bottom: 0; }
 .split-toggle { margin-right: 4px; padding: 0 3px; border-radius: 5px; background: #eaf2ff; color: var(--blue); font-size: 13px; font-weight: 800; }
 .split-label { margin-left: 4px; color: var(--muted); font-size: 10px; }
 .split-details-row td { padding: 0; background: #fbfcfe; }
+.split-detail-table { width: 100%; margin: 0; table-layout: fixed; border-collapse: collapse; }
+.split-detail-table .split-detail-account { display: none; }
+.account-detail-table .split-detail-table .split-detail-activity { display: none; }
+.account-detail-table .split-detail-table .split-detail-account { display: table-row; }
+.split-detail-table td { padding: 6px 12px; border-bottom: 1px solid #eef2f6; background: transparent; color: var(--muted); font-size: 11px; white-space: normal; }
+.split-detail-table tr:last-child td { border-bottom: 0; }
+.split-detail-table td.amount-in, .split-detail-table td.amount-out { font-weight: 750; text-align: right; }
 .split-breakdown { margin: 0; padding: 10px 14px 10px 42px; border-left: 3px solid var(--blue); }
 .split-breakdown strong { color: var(--muted); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
 .split-breakdown ul { display: grid; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; }

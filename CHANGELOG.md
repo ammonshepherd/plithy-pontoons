@@ -483,3 +483,6 @@
 - Replaced Activity status text with cleared lock symbols and moved deletion into the edit modal.
 - Added click-to-edit transaction modals for Activity and Account detail transactions using the Add Transaction form layout.
 - Preserved grouped split transactions, reconciliation controls, and confirmation-based deletion while editing.
+## v0.86.0
+- Aligns split categories under Category and split amounts under Amount in Activity.
+- Aligns split categories and amounts with the existing Account detail columns.
