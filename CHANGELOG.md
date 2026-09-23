@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.93.0
+- Added Copy Previous Spending to use the prior month’s actual expense totals as the current month’s Planned amounts.
+- Kept the copied month unaccepted until Accept Current Plan is selected.
+
 ## v0.92.0
 - Fixed CSV monthly plan imports not marking the selected month as an accepted plan.
 - CSV imports now apply group layout changes to the selected month and flush their Supabase save immediately.

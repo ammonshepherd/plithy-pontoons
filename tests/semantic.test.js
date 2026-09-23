@@ -146,3 +146,10 @@ test('CSV monthly plans mark the selected month accepted and flush cloud save', 
   assert.match(app, /void flushCloudSave\(\)/);
   assert.match(app, /addNameToMonthLayout\(name,group,importMonth\)/);
 });
+
+test('monthly plan actions can copy previous actual spending', () => {
+  assert.match(html, /id="month-copy-spending">Copy Previous Spending<\/button>/);
+  assert.match(app, /function copyPreviousMonthSpending\(\)/);
+  assert.match(app, /spentFor\(c\.name,prior\)/);
+  assert.match(app, /month-copy-spending/);
+});

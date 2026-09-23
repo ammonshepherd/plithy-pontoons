@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#176b5b" />
   <meta name="description" content="A simple envelope budget planner." />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.92.0" />
+  <link rel="stylesheet" href="styles.css?v=0.93.0" />
   <title>BudgetBuddy</title>
 </head>
 <body>
@@ -26,7 +26,7 @@
     <main>
       <section id="dashboard-view" class="view active">
         <div class="page-heading"><div><p class="eyebrow">Monthly budget</p><h1 id="month-title"></h1></div><div class="month-nav"><button class="secondary" id="prev-month">←</button><button class="secondary" id="today-month">Today</button><button class="secondary" id="next-month">→</button></div></div>
-        <div id="available-summary"></div><section id="month-plan-actions" class="month-plan-actions" hidden aria-labelledby="month-plan-actions-title"><div><strong id="month-plan-actions-title">Suggested plan</strong><p id="month-plan-actions-description">Review the suggested amounts, then accept them as this month's plan.</p></div><div class="month-plan-action-buttons"><button class="primary accept-plan-button" id="accept-current-plan">Accept Current Plan</button><button class="secondary" id="month-copy-plan">Copy previous month</button><button class="secondary" id="month-import-plan">Add CSV plan</button></div></section>
+        <div id="available-summary"></div><section id="month-plan-actions" class="month-plan-actions" hidden aria-labelledby="month-plan-actions-title"><div><strong id="month-plan-actions-title">Suggested plan</strong><p id="month-plan-actions-description">Review the suggested amounts, then accept them as this month's plan.</p></div><div class="month-plan-action-buttons"><button class="primary accept-plan-button" id="accept-current-plan">Accept Current Plan</button><button class="secondary" id="month-copy-plan">Copy Previous Month</button><button class="secondary" id="month-copy-spending">Copy Previous Spending</button><button class="secondary" id="month-import-plan">Add CSV Plan</button></div></section>
         <div class="section-heading"><div><h2>Envelopes</h2><p>Assign income, track spending, and protect your category savings.</p></div><button class="primary" id="add-assignment">+ Assign Money</button></div>
         <div id="category-groups"></div>
       </section>
@@ -44,6 +44,6 @@
   <div id="modal-root"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=0.92.0"></script>
+  <script src="app.js?v=0.93.0"></script>
 </body>
 </html>

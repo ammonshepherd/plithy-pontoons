@@ -1,4 +1,4 @@
-const APP_VERSION = '0.92.0';
+const APP_VERSION = '0.93.0';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -55,6 +55,7 @@ function hasExplicitPlan(m=activeMonth){return !!state.planMonths?.[m];}
 function hasSuggestedPlan(m=activeMonth){return Object.values(state.categories).some(c=>!Object.prototype.hasOwnProperty.call(c.plans||{},m)&&plannedFor(c.name,m)>0);}
 function acceptCurrentPlan(){let accepted=0;state.planMonths??={};for(const c of Object.values(state.categories)){if(!Object.prototype.hasOwnProperty.call(c.plans||{},activeMonth)){c.plans??={};c.plans[activeMonth]=Math.round(plannedFor(c.name,activeMonth)*100)/100;accepted++;}}state.planMonths[activeMonth]=true;if(!accepted&&!hasExplicitPlan(activeMonth))return;save();render();appMessage('Plan accepted',`The suggested amounts are now saved as the plan for ${new Date(`${activeMonth}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'})}.`,'success');}
 function copyPreviousMonthPlan(){const prior=previousMonth();let copied=0;for(const c of Object.values(state.categories)){const hasSavedPlan=Object.prototype.hasOwnProperty.call(c.plans||{},prior);const amount=plannedFor(c.name,prior);if(hasSavedPlan||amount>0){c.plans??={};c.plans[activeMonth]=Math.round(amount*100)/100;copied++;}}if(!copied){appMessage('No previous plan to copy',`There are no planned amounts in ${new Date(`${prior}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'})} to copy.`,'warning');return;}save();render();appMessage('Plan copied',`Copied ${copied} planned amount${copied===1?'':'s'} into ${new Date(`${activeMonth}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'})}.`,'success');}
+function copyPreviousMonthSpending(){const prior=previousMonth();let copied=0;for(const c of Object.values(state.categories)){const amount=Math.round(spentFor(c.name,prior)*100)/100;if(amount>0||monthTransactions(prior).some(t=>t.type==='expense'&&t.category===c.name)){c.plans??={};c.plans[activeMonth]=amount;copied++;}}if(!copied){appMessage('No previous spending to copy',`There are no expense transactions in ${new Date(`${prior}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'})} to copy.`,'warning');return;}save();render();appMessage('Previous spending copied',`Copied actual spending for ${copied} categor${copied===1?'y':'ies'} into ${new Date(`${activeMonth}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'})} Planned amounts. Review them, then accept the plan.`,'success');}
 function openPlanCsvImport(){const monthInput=document.getElementById('csv-import-month');if(monthInput)monthInput.value=activeMonth;document.getElementById('csv-input')?.click();}
 function creditCardReady(){return state.transactions.filter(t=>t.type==='expense'&&t.accountId&&state.accounts.find(a=>a.id===t.accountId)?.type==='credit').reduce((a,t)=>a+Number(t.amount),0)-state.transactions.filter(t=>t.type==='transfer'&&t.toAccountId&&state.accounts.find(a=>a.id===t.toAccountId)?.type==='credit').reduce((a,t)=>a+Number(t.amount),0);}
 function accountBalance(a){let total=Number(a.openingBalance||0); for(const t of state.transactions){if(t.accountId===a.id){if(t.type==='income') total+=Number(t.amount); if(t.type==='expense') total-=Number(t.amount); if(t.type==='transfer') total-=Number(t.amount);} if(t.toAccountId===a.id&&t.type==='transfer') total+=Number(t.amount);} return total;}
@@ -375,6 +376,10 @@ importCsvFile=function(event){
   reader.readAsText(file);
 };
 
+const copySpendingButton=document.getElementById('month-copy-spending');
+if(copySpendingButton)copySpendingButton.onclick=copyPreviousMonthSpending;
+const renderWithCopySpending=render;
+render=function(){renderWithCopySpending();const button=document.getElementById('month-copy-spending');if(button)button.hidden=hasExplicitPlan(activeMonth);};
 setup();
 showView(rememberedView(),rememberedView()==='user-account-view'?'settings-view':rememberedView());
 setupImportControls();
