@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#176b5b" />
   <meta name="description" content="A simple envelope budget planner." />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.84.0" />
+  <link rel="stylesheet" href="styles.css?v=0.85.0" />
   <title>BudgetBuddy</title>
 </head>
 <body>
@@ -31,7 +31,7 @@
         <div id="category-groups"></div>
       </section>
 
-        <section id="transactions-view" class="view"><div class="page-heading"><div><p class="eyebrow">Activity</p><h1>Transactions</h1></div><button class="primary activity-add" id="add-transaction">+ Add Transaction</button></div><div class="toolbar"><label>Month <input type="month" id="transaction-month"></label><label>Account <select id="transaction-account-filter"><option value="all">All accounts</option></select></label></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Payee</th><th>Account</th><th>Category</th><th>Amount</th><th>Status</th><th>Delete</th></tr></thead><tbody id="transaction-list"></tbody></table></div></section>
+        <section id="transactions-view" class="view"><div class="page-heading"><div><p class="eyebrow">Activity</p><h1>Transactions</h1></div><button class="primary activity-add" id="add-transaction">+ Add Transaction</button></div><div class="toolbar"><label>Month <input type="month" id="transaction-month"></label><label>Account <select id="transaction-account-filter"><option value="all">All accounts</option></select></label></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Payee</th><th>Amount</th><th>Category</th><th>Account</th><th>Status</th></tr></thead><tbody id="transaction-list"></tbody></table></div></section>
 
       <section id="accounts-view" class="view"><div class="page-heading"><div><p class="eyebrow">Accounts</p><h1>Accounts</h1></div><button class="primary account-add" id="add-account">+ Add Account</button></div><div id="accounts-list" class="account-grid"></div></section>
 
@@ -44,6 +44,6 @@
   <div id="modal-root"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=0.84.0"></script>
+  <script src="app.js?v=0.85.0"></script>
 </body>
 </html>

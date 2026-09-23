@@ -478,3 +478,8 @@
 ## v0.84.0
 - Reordered mobile envelope values: Category, Assigned, Planned on top; Saved, Remaining, Spent below.
 - Remembers the selected app view across page refreshes.
+## v0.85.0
+- Reordered Activity columns to Date, Payee, Amount, Category, Account, Status.
+- Replaced Activity status text with cleared lock symbols and moved deletion into the edit modal.
+- Added click-to-edit transaction modals for Activity and Account detail transactions using the Add Transaction form layout.
+- Preserved grouped split transactions, reconciliation controls, and confirmation-based deletion while editing.

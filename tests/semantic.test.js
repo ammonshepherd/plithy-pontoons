@@ -87,3 +87,19 @@ test('account details group split transactions and reconcile the parent', () => 
   assert.match(app, /renderAccountDetail=function\(id\)[\s\S]*groups\.map\(group=>groupedAccountRow\(group,id\)\)/);
   assert.match(app, /group\.items\.forEach\(item=>\{item\.reconciled=!allReconciled;\}\)/);
 });
+
+test('activity uses the requested columns and lock status instead of row delete controls', () => {
+  assert.match(html, /<th>Date<\/th><th>Payee<\/th><th>Amount<\/th><th>Category<\/th><th>Account<\/th><th>Status<\/th>/);
+  assert.match(app, /transactionStatusLockMarkup/);
+  assert.match(app, /data-edit-transaction/);
+  assert.match(app, /groupedTransactionRow=function\(group\)[\s\S]*data-edit-transaction/);
+  assert.doesNotMatch(app, /groupedTransactionRow=function\(group\)[\s\S]*?data-delete-transaction/);
+});
+
+test('transaction editing uses the add-transaction form and supports deletion', () => {
+  assert.match(app, /function transactionEditorMarkup\(group\)/);
+  assert.match(app, /function openTransactionEditor\(id,afterSave=\(\)=>render\(\)\)/);
+  assert.match(app, /id="transaction-edit-form"/);
+  assert.match(app, /id="delete-edit-transaction"/);
+  assert.match(app, /data-edit-account-transaction/);
+});
