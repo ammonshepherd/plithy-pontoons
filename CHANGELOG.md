@@ -450,3 +450,5 @@
 ## v0.74.0
 - Removed 30-second automatic cloud polling.
 - Preserved cloud refresh when the app regains focus, becomes visible, or reconnects online.
+## v0.75.0
+- Fixed desktop dashboard column alignment by preventing legacy envelope grid styles from affecting semantic table rows.
