@@ -486,3 +486,6 @@
 ## v0.86.0
 - Aligns split categories under Category and split amounts under Amount in Activity.
 - Aligns split categories and amounts with the existing Account detail columns.
+## v0.87.0
+- Swapped the Account detail columns to Amount before Category.
+- Kept split amounts and categories aligned with the new Account detail order.

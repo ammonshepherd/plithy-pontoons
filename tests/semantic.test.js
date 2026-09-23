@@ -110,3 +110,9 @@ test('split detail rows align category and amount with each table layout', () =>
   assert.match(css, /\.account-detail-table \.split-detail-table \.split-detail-activity \{ display: none; \}/);
   assert.match(css, /\.account-detail-table \.split-detail-table \.split-detail-account \{ display: table-row; \}/);
 });
+
+test('account detail places Amount before Category', () => {
+  assert.match(app, /const accountDetailColumnOrderRender=renderAccountDetail/);
+  assert.match(app, /header\.append\(cells\[4\],cells\[3\]\)/);
+  assert.match(app, /groupedAccountRow=function\(group,accountId\)[\s\S]*data-edit-account-transaction[\s\S]*amount-in[\s\S]*Split transaction/);
+});
