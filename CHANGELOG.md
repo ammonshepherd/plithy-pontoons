@@ -489,3 +489,6 @@
 ## v0.87.0
 - Swapped the Account detail columns to Amount before Category.
 - Kept split amounts and categories aligned with the new Account detail order.
+## v0.88.0
+- Right-aligns Activity and Account amount cells consistently with transaction tables.
+- Keeps split details in table-formatted rows with the same amount alignment.

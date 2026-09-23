@@ -116,3 +116,8 @@ test('account detail places Amount before Category', () => {
   assert.match(app, /header\.append\(cells\[4\],cells\[3\]\)/);
   assert.match(app, /groupedAccountRow=function\(group,accountId\)[\s\S]*data-edit-account-transaction[\s\S]*amount-in[\s\S]*Split transaction/);
 });
+
+test('transaction amount cells use consistent right alignment', () => {
+  assert.match(css, /\.table-wrap td\.amount-in, \.table-wrap td\.amount-out, \.account-transaction-list td\.amount-in, \.account-transaction-list td\.amount-out \{ text-align: right; \}/);
+  assert.match(css, /\.split-detail-table td\.amount-in, \.split-detail-table td\.amount-out \{ font-weight: 750; text-align: right; \}/);
+});
