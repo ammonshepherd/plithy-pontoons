@@ -492,3 +492,6 @@
 ## v0.88.0
 - Right-aligns Activity and Account amount cells consistently with transaction tables.
 - Keeps split details in table-formatted rows with the same amount alignment.
+## v0.89.0
+- Aligns Activity and Account amount headers with their values.
+- Reduces mobile transaction table padding and minimum widths for a more compact view.

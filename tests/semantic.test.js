@@ -120,4 +120,6 @@ test('account detail places Amount before Category', () => {
 test('transaction amount cells use consistent right alignment', () => {
   assert.match(css, /\.table-wrap td\.amount-in, \.table-wrap td\.amount-out, \.account-transaction-list td\.amount-in, \.account-transaction-list td\.amount-out \{ text-align: right; \}/);
   assert.match(css, /\.split-detail-table td\.amount-in, \.split-detail-table td\.amount-out \{ font-weight: 750; text-align: right; \}/);
+  assert.match(css, /\.table-wrap th:nth-child\(3\), \.account-transaction-list th:nth-child\(4\) \{ text-align: right; \}/);
+  assert.match(css, /\.table-wrap table, \.account-transaction-list table \{ min-width: 560px; table-layout: fixed; \}/);
 });
