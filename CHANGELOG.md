@@ -452,3 +452,7 @@
 - Preserved cloud refresh when the app regains focus, becomes visible, or reconnects online.
 ## v0.75.0
 - Fixed desktop dashboard column alignment by preventing legacy envelope grid styles from affecting semantic table rows.
+## v0.76.0
+- Audited and consolidated the stylesheet to remove conflicting legacy dashboard and modal rules.
+- Reorganized responsive styles mobile-first, with desktop enhancements in min-width media queries.
+- Preserved the semantic envelope table, transaction form controls, account details, settings, and responsive navigation.

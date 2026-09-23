@@ -36,8 +36,10 @@ test('transaction modal uses native form controls rather than custom category bu
 test('new dashboard CSS uses nested rules and responsive table semantics', () => {
   assert.match(css, /\.budget-table-wrap\s*\{[\s\S]*\.budget-table\s*\{/);
   assert.match(css, /\.budget-table\s*\{[\s\S]*thead th/);
-  assert.match(css, /@media \(max-width: 780px\)/);
+  assert.match(css, /@media \(min-width: 781px\)/);
   assert.match(css, /\.budget-table tbody tr\.envelope \{ display: table-row/);
+  assert.doesNotMatch(css, /@media\s*\(max-width/);
+  assert.doesNotMatch(css, /\.category-header|\.kebab|\.category-name/);
 });
 
 test('cloud refresh uses lifecycle events without interval polling', () => {
