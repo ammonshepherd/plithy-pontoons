@@ -71,3 +71,10 @@ test('activity groups split transactions into a collapsible parent row', () => {
   assert.match(app, /splitBreakdownMarkup\(group\.items\)/);
   assert.match(app, /transactionExtras.*splitGroupId/);
 });
+
+test('account details group split transactions and reconcile the parent', () => {
+  assert.match(app, /function groupedAccountRow\(group,accountId\)/);
+  assert.match(app, /data-account-split-toggle/);
+  assert.match(app, /renderAccountDetail=function\(id\)[\s\S]*groups\.map\(group=>groupedAccountRow\(group,id\)\)/);
+  assert.match(app, /group\.items\.forEach\(item=>\{item\.reconciled=!allReconciled;\}\)/);
+});

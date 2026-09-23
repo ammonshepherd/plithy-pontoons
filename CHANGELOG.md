@@ -472,3 +472,6 @@
 - Groups split transactions into one bank-style parent transaction on Activity.
 - Added a collapsible split breakdown showing each category and amount.
 - Persisted split-group metadata so grouping survives refreshes and device changes.
+## v0.83.0
+- Groups split transactions into one bank-style parent transaction on the Accounts detail page.
+- Added collapsible split details while keeping selection, reconciliation, and deletion on the parent transaction.
