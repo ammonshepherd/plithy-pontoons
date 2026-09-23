@@ -187,6 +187,7 @@ test('normalized persistence rows include accounts, categories, plans, transacti
   assert.equal(rows.accounts.length, 1);
   assert.equal(rows.transactions[0].category_id, state.categories.Groceries.id);
   assert.equal(rows.monthly.find(row => row.category_id === state.categories.Groceries.id).planned, 500);
+  assert.equal(rows.monthly.find(row => row.category_id === state.categories.Groceries.id).assigned, 200);
   assert.deepEqual(JSON.parse(JSON.stringify(rows.months)), [{ household_id: '44444444-4444-4444-8444-444444444444', month_start: '2026-09-01' }]);
 });
 

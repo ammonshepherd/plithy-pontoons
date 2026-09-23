@@ -462,3 +462,6 @@
 - Enabled long mobile category names to wrap naturally, including unbroken names, without horizontal overflow.
 ## v0.79.0
 - Changed normal Planned amounts to black while keeping suggested plans faded.
+## v0.80.0
+- Fixed Assigned inline edits so committed changes immediately flush to Supabase instead of waiting for the delayed save queue.
+- Added regression coverage for Assigned persistence rows and save flushing.

@@ -51,3 +51,8 @@ test('cloud refresh uses lifecycle events without interval polling', () => {
   assert.match(app, /window\.addEventListener\('online'/);
   assert.doesNotMatch(app, /setInterval\(/);
 });
+
+test('assigned inline edits flush their cloud save when committed', () => {
+  assert.match(app, /function flushCloudSave\(\)/);
+  assert.match(app, /beginInlineAssignment=function[\s\S]*void flushCloudSave\(\)/);
+});
