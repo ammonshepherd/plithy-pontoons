@@ -434,3 +434,7 @@
 ## v0.70.0
 - Fixed category selection in split transaction rows with delegated picker handling.
 - Added a live Remaining to split / Over by indicator beneath the split categories.
+## v0.71.0
+- Rebuilt Add Transaction as a semantic HTML form.
+- Replaced custom transaction category buttons with grouped native select controls.
+- Replaced type and split controls with native radio/checkbox inputs styled to match the app.
