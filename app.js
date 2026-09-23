@@ -1,4 +1,4 @@
-const APP_VERSION = '0.73.0';
+const APP_VERSION = '0.74.0';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
 const DEFAULT_GROUPS = [
@@ -132,7 +132,6 @@ async function refreshBudgetFromCloud(){if(isRefreshingCloud||!window.currentBud
 window.addEventListener('online',()=>{if(window.currentBudgetUser){pushNormalizedState().catch(()=>{});refreshBudgetFromCloud();}});
 window.addEventListener('focus',refreshBudgetFromCloud);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshBudgetFromCloud();});
-setInterval(()=>{if(document.visibilityState==='visible')refreshBudgetFromCloud();},30000);
 document.addEventListener('click',event=>{const planButton=event.target.closest?.('[data-plan-category]');if(planButton)planButton.closest('.metric')?.classList.remove('suggested');});
 
 function cloneMonthGroups(groups){return (groups||[]).map(([group,names])=>[group,[...(names||[])]]);}

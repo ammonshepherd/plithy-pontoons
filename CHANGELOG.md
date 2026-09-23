@@ -447,3 +447,6 @@
 ## v0.73.0
 - Aligned desktop dashboard headings and amount columns with fixed semantic table columns.
 - Restored the mobile envelope layout to Category/Saved, Assigned/Planned, and Remaining/Spent.
+## v0.74.0
+- Removed 30-second automatic cloud polling.
+- Preserved cloud refresh when the app regains focus, becomes visible, or reconnects online.

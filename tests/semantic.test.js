@@ -38,3 +38,10 @@ test('new dashboard CSS uses nested rules and responsive table semantics', () =>
   assert.match(css, /\.budget-table\s*\{[\s\S]*thead th/);
   assert.match(css, /@media \(max-width: 780px\)/);
 });
+
+test('cloud refresh uses lifecycle events without interval polling', () => {
+  assert.match(app, /window\.addEventListener\('focus',refreshBudgetFromCloud\)/);
+  assert.match(app, /document\.addEventListener\('visibilitychange'/);
+  assert.match(app, /window\.addEventListener\('online'/);
+  assert.doesNotMatch(app, /setInterval\(/);
+});
