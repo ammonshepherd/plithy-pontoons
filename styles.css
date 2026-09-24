@@ -852,6 +852,26 @@ tr:last-child td  {
    text-align: left;
    text-transform: uppercase;
 }
+.settings-group-actions  {
+   display: flex;
+   gap: 3px;
+   margin-left: auto;
+}
+.group-move  {
+   width: 22px;
+   height: 22px;
+   padding: 0;
+   border: 1px solid var(--line);
+   border-radius: 4px;
+   background: var(--surface);
+   color: var(--muted);
+   font-size: 14px;
+   line-height: 1;
+}
+.group-move:hover, .group-move:focus-visible  {
+   border-color: var(--green);
+   color: var(--green);
+}
 .category-setting-row  {
    display: flex;
    align-items: center;
