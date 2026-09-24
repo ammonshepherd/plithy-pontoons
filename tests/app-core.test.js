@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -217,6 +217,23 @@ test('group move controls reorder the active month layout and persist it', () =>
     api.moveGroupRelative('Weekly Basics', 1);
     assert.equal(api.monthGroups('2026-09')[1][0], 'Weekly Basics');
     assert.equal(api.getState().monthLayouts['2026-09'].groups[1][0], 'Weekly Basics');
+});
+test('lowering an account opening balance exposes the amount over assigned', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-09');
+    state.openingFundsMonth = '2026-09';
+    state.accounts = [{
+     id: 'account-1', name: 'Checking', type: 'checking', openingBalance: 4000
+  }];
+    state.assignments['2026-09'] = { Groceries: 4615.61 };
+    api.setState(state);
+    assert.equal(api.availableToAssign('2026-09'), -615.61);
+    assert.equal(api.overAssigned('2026-09'), 615.61);
+    state.accounts[0].openingBalance = 5000;
+    api.setState(state);
+    assert.equal(api.availableToAssign('2026-09'), 384.39);
+    assert.equal(api.overAssigned('2026-09'), 0);
 });
 test('planned amounts, suggestions, and plan approval work by month', () => {
     const api = loadApp();
