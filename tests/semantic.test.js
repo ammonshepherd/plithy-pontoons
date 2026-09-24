@@ -104,6 +104,16 @@ test('transaction editing uses the add-transaction form and supports deletion', 
   assert.match(app, /data-edit-account-transaction/);
 });
 
+
+test('account deletion preserves transactions and removes their account links', () => {
+  assert.match(app, /function deleteAccount\\(id\\)/);
+  assert.match(app, /state\\.accounts=state\\.accounts\\.filter\\(item=>item\\.id!==id\\)/);
+  assert.match(app, /if\\(transaction\\.accountId===id\\)transaction\\.accountId=''/);
+  assert.match(app, /if\\(transaction\\.toAccountId===id\\)transaction\\.toAccountId=''/);
+  assert.match(app, /id="delete-account-edit"/);
+  assert.match(app, /id="confirm-delete-account"/);
+});
+
 test('split detail rows align category and amount with each table layout', () => {
   assert.match(app, /splitBreakdownMarkup=function\(items\)[\s\S]*split-detail-activity/);
   assert.match(app, /splitBreakdownMarkup=function\(items\)[\s\S]*split-detail-account/);

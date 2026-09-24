@@ -178,6 +178,18 @@ test('available-to-assign includes income and opening funds, while remaining sub
   assert.equal(api.categoryRemaining('Groceries', '2026-09'), 174.5);
 });
 
+
+test('available-to-assign uses account opening balances once instead of stale aggregate opening funds', () => {
+  const api = loadApp();
+  const state = preparedState(api);
+  state.openingFunds = 5231.22;
+  state.openingFundsMonth = '2026-09';
+  state.accounts[0].openingBalance = 4615.61;
+  state.assignments['2026-09'] = {};
+  api.setState(state);
+  assert.equal(api.availableToAssign('2026-09'), 4615.61);
+});
+
 test('account balance reflects an edited checking opening balance and transactions', () => {
   const api = loadApp();
   const state = preparedState(api);
