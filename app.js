@@ -1,4 +1,4 @@
-const APP_VERSION = '0.98.9';
+const APP_VERSION = '0.99.0';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -1199,80 +1199,6 @@ function setupCategoryPicker(root,prefix='tx'){
     e.preventDefault();e.stopPropagation();if(option.disabled)return;hiddenInput.value=option.dataset.categoryOption;label.textContent=option.dataset.categoryOption==='__available__'?'Available to assign':option.dataset.categoryOption;pickerMenu.hidden=true;pickerButton.classList.remove('open');
   });
 }
-function openTransaction(){
-  const options=orderedCategoryNames();
-  const selected=options[0]||'';
-  const accounts=state.accounts;
-  const m=modal('Add transaction',`<div class="form-grid transaction-form">`+
-`<label class="form-field full amount-field">`+
-`<span>Amount</span>`+
-`<input id="tx-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$0.00">`+
-`</label>`+
-`<label class="form-field full">Type<div class="transaction-type-toggle">`+
-`<button type="button" class="expense selected" data-type="expense">Expense</button>`+
-`<button type="button" class="income" data-type="income">Income</button>`+
-`</div>`+
-`</label>`+
-`<label class="form-field full">Date<input id="tx-date" type="date" value="${activeMonth}-${String(new Date().getDate()).padStart(2,'0')}">`+
-`</label>`+
-`<label class="form-field full">Payee / description<input id="tx-payee" placeholder="e.g. Grocery store">`+
-`</label>`+
-`<label class="form-field full" id="account-field">Account<select id="tx-account">${accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select>`+
-`</label>`+
-`<label class="form-field full" id="category-field">Category${categoryPickerMarkup(selected)}</label>`+
-`<label class="form-field full">Memo<input id="tx-memo">`+
-`</label>`+
-`<label class="cleared-toggle">`+
-`<span>Cleared</span>`+
-`<input id="tx-cleared" type="checkbox" checked>`+
-`<span class="toggle-track">`+
-`<span class="toggle-thumb">`+
-`</span>`+
-`</span>`+
-`</label>`+
-`</div>`+
-`<div class="modal-actions">`+
-`<button class="secondary" data-close>Cancel</button>`+
-`<button class="primary" id="save-tx">Save transaction</button>`+
-`</div>`);
-  let transactionType='expense';
-  const catField=m.querySelector('#category-field');
-  const pickerButton=m.querySelector('#tx-category-button');
-  const pickerMenu=m.querySelector('#tx-category-menu');
-  pickerButton.onclick=()=>{
-    pickerMenu.hidden=!pickerMenu.hidden;
-    pickerButton.classList.toggle('open',!pickerMenu.hidden);
-  };
-  m.querySelectorAll('[data-category-option]').forEach(option=>option.onclick=()=>{
-    m.querySelector('#tx-category').value=option.dataset.categoryOption;m.querySelector('#tx-category-label').textContent=option.dataset.categoryOption;pickerMenu.hidden=true;pickerButton.classList.remove('open');
-  });
-  m.querySelectorAll('[data-type]').forEach(button=>button.onclick=()=>{
-    transactionType=button.dataset.type;m.querySelectorAll('[data-type]').forEach(x=>x.classList.toggle('selected',x===button));catField.style.display=transactionType==='expense'?'block':'none';
-  });
-  m.querySelector('[data-close]').onclick=closeModal;
-  m.querySelector('#save-tx').onclick=()=>{
-    const amount=Number(m.querySelector('#tx-amount').value);
-    if(!amount||!accounts.length)return;
-    const t={
-      id:uid('tx'),type:transactionType,date:m.querySelector('#tx-date').value,amount,payee:m.querySelector('#tx-payee').value,memo:m.querySelector('#tx-memo').value,accountId:m.querySelector('#tx-account').value,category:transactionType==='expense'?m.querySelector('#tx-category').value:'',cleared:m.querySelector('#tx-cleared').checked
-    };
-    if(transactionType==='expense'&&categoryRemaining(t.category)-amount<0&&savedFor(t.category)<amount-categoryRemaining(t.category)){
-      appMessage('Transaction needs more funding','You need to assign more money to this category before making this transaction.','warning');
-      return;
-    }
-    state.transactions.push(t);
-    if(transactionType==='expense'){
-      const c=category(t.category);
-      const monthSpent=spentFor(t.category,t.date.slice(0,7));
-      if(monthSpent>Number(state.assignments[t.date.slice(0,7)]?.[t.category]||0)){
-        c.savings=Math.max(0,c.savings-(monthSpent-Number(state.assignments[t.date.slice(0,7)]?.[t.category]||0)));
-      }
-    }
-    save();
-    closeModal();
-    render();
-  };
-}
 function openAccount(){
   const m=modal('Add account',`<div class="form-grid">`+
 `<label class="form-field full">Account name<input id="account-name" placeholder="e.g. Main checking">`+
@@ -1614,34 +1540,6 @@ function deleteTag(name){
     renderTags();
   };
 }
-function enhanceTransactionTagPicker(){
-  const m=document.querySelector('.modal');
-  if(!m||!m.querySelector('#save-tx')||m.querySelector('#tx-tag'))return;
-  const tags=Array.isArray(state.tags)?state.tags:[];
-  const tagField=document.createElement('label');
-  tagField.className='form-field full';
-  tagField.innerHTML=`Tag<select id="tx-tag">`+
-`<option value="">No tag</option>${tags.map(tag=>`<option value="${esc(tag)}">${esc(tag)}</option>`).join('')}</select>`;
-  const memo=m.querySelector('#tx-memo')?.closest('label');
-  if(memo)memo.before(tagField);
-  else m.querySelector('.transaction-form').append(tagField);
-  const saveButton=m.querySelector('#save-tx');
-  const originalSave=saveButton.onclick;
-  saveButton.onclick=()=>{
-    const before=state.transactions.length;
-    originalSave();
-    if(state.transactions.length>before){
-      state.transactions[state.transactions.length-1].tag=m.querySelector('#tx-tag').value;
-      save();
-      render();
-    }
-  };
-}
-const originalOpenTransaction=openTransaction;
-openTransaction=function(){
-  originalOpenTransaction();
-  enhanceTransactionTagPicker();
-};
 const originalRenderSettings=renderSettings;
 renderSettings=function(){
   originalRenderSettings();
@@ -2282,154 +2180,6 @@ pullNormalizedState=async function(){
   await normalizedPull();
   await applyMetadataExtensions();
 };
-openTransaction=function(){
-  const options=orderedCategoryNames();
-  const selected=options[0]||'';
-  const accounts=state.accounts;
-  const m=modal('Add transaction',`<div class="form-grid transaction-form">`+
-`<label class="form-field full amount-field">`+
-`<span>Amount</span>`+
-`<input id="tx-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$0.00">`+
-`</label>`+
-`<div class="form-field full">Type<div class="transaction-type-toggle">`+
-`<button type="button" class="expense selected" data-type="expense">Expense</button>`+
-`<button type="button" class="income" data-type="income">Income</button>`+
-`</div>`+
-`</div>`+
-`<div class="form-field full split-toggle-field">`+
-`<span>Split transaction</span>`+
-`<button type="button" id="tx-split-toggle" class="pill-toggle" aria-pressed="false">`+
-`<span>Off</span>`+
-`<span>On</span>`+
-`</button>`+
-`</div>`+
-`<div id="tx-single-category" class="form-field full">Category${categoryPickerMarkup(selected,'tx')}</div>`+
-`<div id="tx-splits" class="form-field full" hidden>`+
-`<div class="split-heading">`+
-`<strong>Split categories</strong>`+
-`<small>Amounts must add up to the total.</small>`+
-`</div>`+
-`<div id="split-rows">`+
-`</div>`+
-`<button type="button" class="secondary add-split" id="add-split">+ Add split</button>`+
-`</div>`+
-`<label class="form-field full">Date<input id="tx-date" type="date" value="${activeMonth}-${String(new Date().getDate()).padStart(2,'0')}">`+
-`</label>`+
-`<label class="form-field full">Payee / description<input id="tx-payee" placeholder="e.g. Grocery store">`+
-`</label>`+
-`<label class="form-field full">Account<select id="tx-account">${accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select>`+
-`</label>`+
-`<label class="form-field full">Memo<input id="tx-memo">`+
-`</label>`+
-`<label class="form-field full">Tag<select id="tx-tag">`+
-`<option value="">No tag</option>${(state.tags||[]).map(tag=>`<option value="${esc(tag)}">${esc(tag)}</option>`).join('')}</select>`+
-`</label>`+
-`<label class="cleared-toggle">`+
-`<span>Cleared</span>`+
-`<input id="tx-cleared" type="checkbox" checked>`+
-`<span class="toggle-track">`+
-`<span class="toggle-thumb">`+
-`</span>`+
-`</span>`+
-`</label>`+
-`</div>`+
-`<div class="modal-actions">`+
-`<button type="button" class="secondary" data-close>Cancel</button>`+
-`<button type="button" class="primary" id="save-tx">Save transaction</button>`+
-`</div>`);
-  let transactionType='expense';
-  let splitMode=false;
-  let splitCounter=0;
-  const splitRows=m.querySelector('#split-rows'),singleCategory=m.querySelector('#tx-single-category'),splits=m.querySelector('#tx-splits'),splitToggle=m.querySelector('#tx-split-toggle'),addSplit=m.querySelector('#add-split');
-  const setSplitMode=enabled=>{
-    splitMode=enabled;
-    splits.hidden=!enabled;
-    singleCategory.hidden=enabled;
-    splitToggle.classList.toggle('on',enabled);
-    splitToggle.setAttribute('aria-pressed',String(enabled));
-  };
-  const addSplitRow=()=>{
-    const index=splitCounter++;
-    const row=document.createElement('div');
-    row.className='split-row';
-    row.innerHTML=`<div class="split-category">${categoryPickerMarkup(options[Math.min(index,options.length-1)]||'','split${index}')}</div>`+
-`<input class="split-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$0.00">`+
-`<button type="button" class="text-button remove-split" title="Remove split" aria-label="Remove split">×</button>`;
-    splitRows.append(row);
-    setupCategoryPicker(row,`split${index}`);
-    row.querySelector('.remove-split').onclick=()=>{
-      if(splitRows.children.length>2)row.remove();
-      else appMessage('Keep at least two splits','A split transaction needs at least two categories.','warning');
-    };
-  };
-  addSplitRow();
-  addSplitRow();
-  setupCategoryPicker(m,'tx');
-  splitToggle.onclick=()=>setSplitMode(!splitMode);
-  addSplit.onclick=addSplitRow;
-  m.querySelectorAll('[data-type]').forEach(button=>button.onclick=()=>{
-    transactionType=button.dataset.type;m.querySelectorAll('[data-type]').forEach(x=>x.classList.toggle('selected',x===button));const isExpense=transactionType==='expense';m.querySelector('.split-toggle-field').hidden=!isExpense;if(!isExpense)setSplitMode(false);else singleCategory.hidden=splitMode;
-  });
-  m.querySelector('[data-close]').onclick=closeModal;
-  m.querySelector('#save-tx').onclick=()=>{
-    const amount=Number(m.querySelector('#tx-amount').value);
-    if(!amount||!accounts.length)return;
-    const date=m.querySelector('#tx-date').value,payee=m.querySelector('#tx-payee').value,memo=m.querySelector('#tx-memo').value,accountId=m.querySelector('#tx-account').value,cleared=m.querySelector('#tx-cleared').checked,tag=m.querySelector('#tx-tag').value;
-    let parts;
-    if(transactionType==='income')parts=[{
-      category:'',amount
-    }];
-    else if(splitMode){
-      parts=[...splitRows.querySelectorAll('.split-row')].map(row=>({
-        category:row.querySelector('input[type="hidden"]')?.value||'',amount:Number(row.querySelector('.split-amount').value||0)
-      }));
-      const totalCents=Math.round(amount*100),splitCents=parts.reduce((sum,part)=>sum+Math.round(part.amount*100),0);
-      if(parts.some(part=>!part.category||part.amount<=0)||splitCents!==totalCents){
-        appMessage('Split amounts do not match',`The split amounts total ${money(splitCents/100)}, but the transaction total is ${money(amount)}.`,'warning');
-        return;
-      }
-    }
-    else parts=[{
-      category:m.querySelector('#tx-category').value,amount
-    }];
-    for(const part of parts){
-      if(transactionType==='expense'&&categoryRemaining(part.category)-part.amount<0&&savedFor(part.category)<part.amount-categoryRemaining(part.category)){
-        appMessage('Transaction needs more funding','You need to assign more money to this category before making this transaction.','warning');
-        return;
-      }
-    }
-    for(const part of parts){
-      const t={
-        id:uid('tx'),type:transactionType,date,amount:part.amount,payee,memo,accountId,category:part.category,cleared,tag
-      };
-      state.transactions.push(t);
-      if(transactionType==='expense'){
-        const c=category(part.category);
-        const monthSpent=spentFor(part.category,date.slice(0,7));
-        if(c&&monthSpent>Number(state.assignments[date.slice(0,7)]?.[part.category]||0))c.savings=Math.max(0,c.savings-(monthSpent-Number(state.assignments[date.slice(0,7)]?.[part.category]||0)));
-      }
-    }
-    save();
-    closeModal();
-    render();
-  };
-};
-const transactionModalOpen=openTransaction;
-openTransaction=function(){
-  transactionModalOpen();
-  const modalRoot=document.getElementById('modal-root');
-  const m=modalRoot?.querySelector('.modal');
-  const saveButton=m?.querySelector('#save-tx');
-  if(!m||!saveButton)return;
-  saveButton.addEventListener('click',()=>{
-    const amount=Number(m.querySelector('#tx-amount')?.value||0);if(!amount){
-      appMessage('Enter an amount','Enter an amount before saving the transaction.','warning');return;
-    }
-    if(!state.accounts.length){
-      appMessage('Add an account first','A transaction needs an account before it can be saved.','warning');return;
-    }
-  },true);
-};
 categoryPickerMarkup=function(selected,prefix='tx',withBalances=false,excluded='',includeAvailable=false){
     const grouped={
   };
@@ -2451,180 +2201,6 @@ categoryPickerMarkup=function(selected,prefix='tx',withBalances=false,excluded='
 `</div>`+
 `<input type="hidden" id="${prefix}-category" value="${esc(selected)}">`;
 };
-function openTransactionV68(){
-    const options=orderedCategoryNames();
-    const selected=options[0]||'';
-    const accounts=state.accounts||[];
-    const m=modal('Add transaction',`<div class="form-grid transaction-form">
-    <label class="form-field full amount-field">`+
-`<span>Amount</span>`+
-`<input id="tx-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$0.00">`+
-`</label>
-    <div class="form-field full">Type<div class="transaction-type-toggle">`+
-`<button type="button" class="expense selected" data-type="expense">Expense</button>`+
-`<button type="button" class="income" data-type="income">Income</button>`+
-`</div>`+
-`</div>
-    <div class="form-field full split-toggle-field">`+
-`<span>Split transaction</span>`+
-`<button type="button" id="tx-split-toggle" class="pill-toggle" aria-pressed="false">`+
-`<span>Off</span>`+
-`<span>On</span>`+
-`</button>`+
-`</div>
-    <div id="tx-single-category" class="form-field full">Category${categoryPickerMarkup(selected,'tx')}</div>
-    <div id="tx-splits" class="form-field full" hidden>`+
-`<div class="split-heading">`+
-`<strong>Split categories</strong>`+
-`<small>Amounts must add up to the total.</small>`+
-`</div>`+
-`<div id="split-remaining" class="split-remaining">Remaining to split: <strong>$0.00</strong>`+
-`</div>`+
-`<div id="split-rows">`+
-`</div>`+
-`<button type="button" class="secondary add-split" id="add-split">+ Add split</button>`+
-`</div>
-    <label class="form-field full">Date<input id="tx-date" type="date" value="${activeMonth}-${String(new Date().getDate()).padStart(2,'0')}">`+
-`</label>
-    <label class="form-field full">Payee / description<input id="tx-payee" placeholder="e.g. Grocery store">`+
-`</label>
-    <label class="form-field full">Account<select id="tx-account">${accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select>`+
-`</label>
-    <label class="form-field full">Memo<input id="tx-memo">`+
-`</label>
-    <label class="form-field full">Tag<select id="tx-tag">`+
-`<option value="">No tag</option>${(state.tags||[]).map(tag=>`<option value="${esc(tag)}">${esc(tag)}</option>`).join('')}</select>`+
-`</label>
-    <label class="cleared-toggle">`+
-`<span>Cleared</span>`+
-`<input id="tx-cleared" type="checkbox" checked>`+
-`<span class="toggle-track">`+
-`<span class="toggle-thumb">`+
-`</span>`+
-`</span>`+
-`</label>
-  </div>`+
-`<div class="modal-actions">`+
-`<button type="button" class="secondary" data-close>Cancel</button>`+
-`<button type="button" class="primary" id="save-tx">Save transaction</button>`+
-`</div>`);
-    let transactionType='expense';
-    let splitMode=false;
-    let splitCounter=0;
-    const rows=m.querySelector('#split-rows');
-    const single=m.querySelector('#tx-single-category');
-    const splitBox=m.querySelector('#tx-splits');
-    const updateSplitRemaining=()=>{
-    const total=Math.round(Number(m.querySelector('#tx-amount').value||0)*100);
-    const used=[...rows.querySelectorAll('.split-amount')].reduce((sum,input)=>sum+Math.round(Number(input.value||0)*100),0);
-    const remaining=(total-used)/100;
-    const indicator=m.querySelector('#split-remaining');
-    indicator.classList.toggle('over',remaining<0);
-    indicator.innerHTML=remaining>=0?`Remaining to split: <strong>${money(remaining)}</strong>`:`Over by: <strong>${money(Math.abs(remaining))}</strong>`;
-  };
-    const pickerFor=(root,prefix)=>{
-    const button=root.querySelector(`#${prefix}-category-button`),menu=root.querySelector(`#${prefix}-category-menu`),input=root.querySelector(`#${prefix}-category`),label=root.querySelector(`#${prefix}-category-label`);
-    if(!button||!menu||!input||!label)return;
-    button.addEventListener('click',e=>{
-      e.preventDefault();e.stopPropagation();menu.hidden=!menu.hidden;button.classList.toggle('open',!menu.hidden);
-    });
-    menu.addEventListener('click',e=>{
-      const option=e.target.closest('[data-category-option]');if(!option||option.disabled)return;e.preventDefault();e.stopPropagation();input.value=option.dataset.categoryOption;label.textContent=option.dataset.categoryOption==='__available__'?'Available to assign':option.dataset.categoryOption;menu.hidden=true;button.classList.remove('open');
-    });
-  };
-    const addRow=()=>{
-    const index=splitCounter++;
-    const row=document.createElement('div');
-    row.className='split-row';
-    row.innerHTML=`<div class="split-category">${categoryPickerMarkup(options[Math.min(index,options.length-1)]||'','split${index}')}</div>`+
-`<input class="split-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$0.00">`+
-`<button type="button" class="text-button remove-split" title="Remove split" aria-label="Remove split">×</button>`;
-    rows.append(row);
-    pickerFor(row,`split${index}`);
-    row.querySelector('.split-amount').addEventListener('input',updateSplitRemaining);
-    updateSplitRemaining();
-  };
-    const setSplit=enabled=>{
-    splitMode=enabled;
-    splitBox.hidden=!enabled;
-    single.hidden=enabled;
-    const toggle=m.querySelector('#tx-split-toggle');
-    toggle.classList.toggle('on',enabled);
-    toggle.setAttribute('aria-pressed',String(enabled));
-  };
-    const saveTransaction=()=>{
-    const amount=Number(m.querySelector('#tx-amount').value);
-    if(!amount){
-      appMessage('Enter an amount','Enter an amount before saving the transaction.','warning');
-      return;
-    }
-    if(!accounts.length){
-      appMessage('Add an account first','A transaction needs an account before it can be saved.','warning');
-      return;
-    }
-    const date=m.querySelector('#tx-date').value,payee=m.querySelector('#tx-payee').value,memo=m.querySelector('#tx-memo').value,accountId=m.querySelector('#tx-account').value,cleared=m.querySelector('#tx-cleared').checked,tag=m.querySelector('#tx-tag').value;
-    let parts;
-    if(transactionType==='income')parts=[{
-      category:'',amount
-    }];
-    else if(splitMode){
-      parts=[...rows.querySelectorAll('.split-row')].map(row=>({
-        category:row.querySelector('input[type="hidden"]')?.value||'',amount:Number(row.querySelector('.split-amount').value||0)
-      }));
-      const totalCents=Math.round(amount*100),splitCents=parts.reduce((sum,part)=>sum+Math.round(part.amount*100),0);
-      if(parts.some(part=>!part.category||part.amount<=0)||splitCents!==totalCents){
-        appMessage('Split amounts do not match',`The split amounts total ${money(splitCents/100)}, but the transaction total is ${money(amount)}.`,'warning');
-        return;
-      }
-    }
-    else parts=[{
-      category:m.querySelector('#tx-category')?.value||'',amount
-    }];
-    for(const part of parts){
-      if(transactionType==='expense'&&(!part.category||categoryRemaining(part.category)-part.amount<0&&savedFor(part.category)<part.amount-categoryRemaining(part.category))){
-        appMessage('Transaction needs more funding','You need to assign more money to this category before making this transaction.','warning');
-        return;
-      }
-    }
-    for(const part of parts){
-      const t={
-        id:uid('tx'),type:transactionType,date,amount:part.amount,payee,memo,accountId,category:part.category,cleared,tag
-      };
-      state.transactions.push(t);
-    }
-    save();
-    closeModal();
-    render();
-  };
-    pickerFor(m,'tx');
-  m.querySelector('#tx-amount').addEventListener('input',updateSplitRemaining);
-  m.addEventListener('click',e=>{
-    const option=e.target.closest('[data-category-option]');if(!option||option.disabled)return;const picker=option.closest('.category-picker');const input=picker?.querySelector('input[type="hidden"]');const label=picker?.querySelector('.category-picker-button span');const menu=picker?.querySelector('.category-picker-menu');if(!input||!label)return;e.preventDefault();e.stopPropagation();input.value=option.dataset.categoryOption;label.textContent=option.dataset.categoryOption==='__available__'?'Available to assign':option.dataset.categoryOption;if(menu)menu.hidden=true;picker.querySelector('.category-picker-button')?.classList.remove('open');
-  },true);
-  addRow();
-  addRow();
-    m.addEventListener('click',e=>{
-    const type=e.target.closest('[data-type]');if(type){
-      transactionType=type.dataset.type;m.querySelectorAll('[data-type]').forEach(button=>button.classList.toggle('selected',button===type));const expense=transactionType==='expense';m.querySelector('.split-toggle-field').hidden=!expense;if(!expense)setSplit(false);return;
-    }
-    if(e.target.closest('#tx-split-toggle')){
-      setSplit(!splitMode);return;
-    }
-    if(e.target.closest('#add-split')){
-      addRow();return;
-    }
-    if(e.target.closest('.remove-split')){
-      const row=e.target.closest('.split-row');if(rows.children.length>2){
-        row.remove();updateSplitRemaining();
-      }
-      else appMessage('Keep at least two splits','A split transaction needs at least two categories.','warning');return;
-    }
-    if(e.target.closest('[data-close]')){
-      closeModal();return;
-    }
-    if(e.target.closest('#save-tx'))saveTransaction();
-  });
-}
 function transactionCategorySelectMarkup(id,selected='',name='category',required=false){
   return `<select id="${id}" name="${name}" class="category-native-select" ${required?'required':''}>`+
 `<option value="">Choose a category</option>${monthGroups(activeMonth).map(([group,names])=>`<optgroup label="${esc(group)}">${names.map(categoryName=>`<option value="${esc(categoryName)}" ${categoryName===selected?'selected':''}>${esc(categoryName)} — ${money(categoryRemaining(categoryName))}</option>`).join('')}</optgroup>`).join('')}</select>`;
@@ -2662,7 +2238,7 @@ renderCategories=function(){
   root.querySelectorAll('[data-plan-category]').forEach(b=>b.onclick=()=>beginInlinePlan(b,b.dataset.planCategory));
   root.querySelectorAll('[data-move-category]').forEach(b=>b.onclick=()=>openMoveMoney(b.dataset.moveCategory));
 };
-function openTransactionV71(){
+function openTransaction(){
     const options=orderedCategoryNames(),selected=options[0]||'',accounts=state.accounts||[];
     const m=modal('Add transaction',`<form id="transaction-form" class="form-grid transaction-form">
     <label class="form-field full amount-field">`+
@@ -2785,7 +2361,6 @@ function openTransactionV71(){
     }));save();closeModal();render();
   });
 }
-openTransaction=openTransactionV71;
 const setupCategoryDragHandlers=setupSettingsCategoryDrag;
 const setupGroupDragHandlers=setupGroupDrag;
 function normalizeSettingsDragHandles(root){
@@ -3157,7 +2732,7 @@ function transactionEditorMarkup(group){
 `<div class="modal-actions full">`+
 `<button type="button" class="secondary" data-close>Cancel</button>`+
 `<button type="button" class="secondary danger" id="delete-edit-transaction">Delete transaction</button>`+
-`<button type="button" class="primary" id="save-tx">Save transaction</button>`+
+`<button type="submit" class="primary" id="save-tx">Save transaction</button>`+
 `</div>`+
 `</form>`;
 }
@@ -3275,7 +2850,6 @@ function openTransactionEditor(id,afterSave=()=>render()){
       }
     });const oldIds=new Set(group.items.map(item=>item.id));state.transactions=state.transactions.filter(item=>!oldIds.has(item.id)).concat(records);save();closeModal();afterSave();
   };
-  m.querySelector('#save-tx').onclick=saveEditedTransaction;
   form.addEventListener('submit',saveEditedTransaction);
   setSplit(splitToggle.checked);
   updateSplitRemaining();

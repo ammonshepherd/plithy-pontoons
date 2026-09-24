@@ -51,10 +51,14 @@ test('forms, delegated controls, and generated actions have handlers', () => {
     assert.match(app, /\[data-close\]/);
 });
 
-test('account transaction editor explicitly submits when Save changes is clicked', () => {
-    assert.match(app, /<button type="button" class="primary" id="save-tx">Save transaction<\/button>/);
+test('transaction add and edit modals use native form submission', () => {
+    assert.equal((app.match(/function openTransaction\(/g) || []).length, 1);
+    assert.equal((app.match(/function openTransactionV/g) || []).length, 0);
+    assert.equal((app.match(/id="transaction-form"/g) || []).length, 1);
+    assert.equal((app.match(/id="transaction-edit-form"/g) || []).length, 1);
+    assert.match(app, /<button type="submit" class="primary" id="save-tx">Save transaction<\/button>/);
     assert.match(app, /const saveEditedTransaction=event=>\{/);
-    assert.match(app, /m\.querySelector\('#save-tx'\)\.onclick=saveEditedTransaction/);
     assert.match(app, /form\.addEventListener\('submit',saveEditedTransaction\)/);
-    assert.doesNotMatch(app, /form\.requestSubmit\(\)/);
+    assert.doesNotMatch(app, /m\.querySelector\('#save-tx'\)\.onclick/);
+    assert.doesNotMatch(app, /requestSubmit/);
 });
