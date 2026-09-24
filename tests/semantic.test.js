@@ -182,3 +182,8 @@ test('budget reset has one accurate destructive control', () => {
   assert.match(app, /document\.getElementById\('wipe-budget'\)\.onclick=wipeBudget/);
   assert.doesNotMatch(app, /reset-demo/);
 });
+
+test('bank CSV review uses the app modal helper', () => {
+  assert.match(app, /function openBankImportReview\(accountId,rows\)[\s\S]*modal\('Review bank import'/);
+  assert.doesNotMatch(app, /openModal/);
+});
