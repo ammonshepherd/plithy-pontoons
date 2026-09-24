@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,paymentMatchScore,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -490,4 +490,29 @@ test('payment matching recognizes bank abbreviations such as online pymt', () =>
     assert.equal(pairs.length, 1);
     assert.equal(pairs[0].checking.id, 'checking-payment');
     assert.equal(pairs[0].card.id, 'card-payment');
+});
+test('payment matching scores exact amounts, dates, and payee evidence', () => {
+    const api = loadApp();
+    const sameDay = api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Visa payment' },
+      { amount: 100, date: '2026-09-20', payee: 'Online pymt' },
+      ['Visa']
+    );
+    const reviewOnly = api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Bank entry' },
+      { amount: 100, date: '2026-09-23', payee: 'Account credit' },
+      ['Visa']
+    );
+    assert.equal(sameDay.confidence, 'High');
+    assert.equal(reviewOnly.confidence, 'Review');
+    assert.equal(api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Payment' },
+      { amount: 101, date: '2026-09-20', payee: 'Payment' },
+      ['Visa']
+    ), null);
+    assert.equal(api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Payment' },
+      { amount: 100, date: '2026-09-28', payee: 'Payment' },
+      ['Visa']
+    ), null);
 });
