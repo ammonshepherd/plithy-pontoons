@@ -183,7 +183,7 @@ async function pushNormalizedState(){
       },categoryOrder:state.categoryOrder||{
       },monthLayouts:state.monthLayouts||{
       },accountNotes:Object.fromEntries((state.accounts||[]).map(a=>[a.id,a.notes||''])),transactionExtras:Object.fromEntries((state.transactions||[]).map(t=>[t.id,{
-        tag:t.tag||'',reconciled:!!t.reconciled,bankTransactionId:t.bankTransactionId||'',checkNumber:t.checkNumber||''
+        tag:t.tag||'',reconciled:!!t.reconciled,bankTransactionId:t.bankTransactionId||'',checkNumber:t.checkNumber||'',postedDate:t.postedDate||'',cardNumber:t.cardNumber||'',transferBankTransactionIds:t.transferBankTransactionIds||[]
       }])),wiped:!!state.wiped
     };
     const metadataWrite=await supabaseClient.from('budget_metadata').upsert({
@@ -2345,6 +2345,9 @@ async function applyMetadataExtensions(){
       if(extra){
         transaction.tag=extra.tag||'';
         transaction.reconciled=!!extra.reconciled;
+        transaction.postedDate=extra.postedDate||transaction.postedDate||'';
+        transaction.cardNumber=extra.cardNumber||transaction.cardNumber||'';
+        transaction.transferBankTransactionIds=extra.transferBankTransactionIds||transaction.transferBankTransactionIds||[];
       }
     }
   }
@@ -2812,7 +2815,7 @@ pushNormalizedState=async function(){
     ...(data.transactionExtras||{
     }),...Object.fromEntries(state.transactions.map(t=>[t.id,{
       ...(data.transactionExtras?.[t.id]||{
-      }),tag:t.tag||'',reconciled:!!t.reconciled,splitGroupId:t.splitGroupId||'',splitIndex:t.splitIndex??null,splitCount:t.splitCount??null
+      }),tag:t.tag||'',reconciled:!!t.reconciled,splitGroupId:t.splitGroupId||'',splitIndex:t.splitIndex??null,splitCount:t.splitCount??null,postedDate:t.postedDate||'',cardNumber:t.cardNumber||'',transferBankTransactionIds:t.transferBankTransactionIds||[]
     }]))
   };
   const result=await supabaseClient.from('budget_metadata').upsert({
@@ -2834,6 +2837,7 @@ pullNormalizedState=async function(){
       t.splitGroupId=extra.splitGroupId;t.splitIndex=extra.splitIndex;t.splitCount=extra.splitCount;
     }
     if(extra?.bankTransactionId)t.bankTransactionId=extra.bankTransactionId;if(extra?.checkNumber)t.checkNumber=extra.checkNumber;
+    if(extra?.postedDate)t.postedDate=extra.postedDate;if(extra?.cardNumber)t.cardNumber=extra.cardNumber;if(extra?.transferBankTransactionIds)t.transferBankTransactionIds=extra.transferBankTransactionIds;
   });
 };
 const pullWithSplitRender=pullNormalizedState;
