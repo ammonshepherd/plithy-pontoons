@@ -235,6 +235,8 @@ input:focus, select:focus, button:focus-visible  {
    max-width: 390px;
    margin: 0 0 18px;
    padding: 14px;
+   background: color-mix(in srgb, var(--success) 12%, var(--surface));
+   border-color: color-mix(in srgb, var(--success) 45%, var(--line));
 }
 .available-card span, .available-card small  {
    display: block;
@@ -246,6 +248,7 @@ input:focus, select:focus, button:focus-visible  {
    margin: 8px 0 2px;
    font-size: 22px;
    letter-spacing: -.045em;
+   color: var(--success);
 }
 .month-plan-actions  {
    display: flex;
@@ -1612,4 +1615,3 @@ tr:last-child td  {
      grid-template-columns: repeat(3, 1fr);
   }
 }
-
