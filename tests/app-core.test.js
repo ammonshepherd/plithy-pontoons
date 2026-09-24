@@ -67,7 +67,7 @@ function loadApp() {
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
     moveGroup,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
-    acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,
+    acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
     getGroups:()=>GROUPS
@@ -229,4 +229,24 @@ test('strong-password validation and user account updates build the expected pay
   api.setField('user-password-strength', '');
   await api.saveUserAccount({ preventDefault() {} });
   assert.deepEqual(JSON.parse(JSON.stringify(api.getUpdatePayload())), { email: 'new@example.com', data: { display_name: 'Ammon' }, password: 'StrongPassword9!' });
+});
+
+test('bank CSV parsing and matching reconciles manual transactions without duplicating them', () => {
+  const api = loadApp();
+  const state = api.initialState();
+  const accountId = '11111111-1111-4111-8111-111111111111';
+  state.accounts = [{ id: accountId, name: 'Checking', type: 'checking', openingBalance: 0 }];
+  state.transactions = [{ id: 'manual-1', type: 'expense', date: '2026-09-20', amount: 45.67, payee: 'Grocery, Store', memo: '', accountId, category: 'Groceries', cleared: false }];
+  api.setState(state);
+  const rows = api.parseBankTransactionCsv('Account ID,Transaction ID,Date,Description,Check Number,Category,Tags,Amount,Balance\nacct,bank-1,2026-09-20,"Grocery, Store",,,,-45.67,1000.00\nacct,bank-2,2026-09-21,Payroll,,,,"2,000.00",3000.00');
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].amount, -45.67);
+  assert.equal(rows[0].description, 'Grocery, Store');
+  const plan = api.bankImportPlan(accountId, rows);
+  assert.equal(plan[0].match.id, 'manual-1');
+  assert.equal(plan[1].match, null);
+  const imported = api.bankTransactionFromRow(rows[1], accountId);
+  assert.equal(imported.type, 'income');
+  assert.equal(imported.amount, 2000);
+  assert.equal(imported.accountId, accountId);
 });

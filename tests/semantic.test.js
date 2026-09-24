@@ -163,3 +163,13 @@ test('monthly plan actions can copy previous actual spending', () => {
   assert.match(app, /spentFor\(c\.name,prior\)/);
   assert.match(app, /month-copy-spending/);
 });
+
+test('account detail exposes safe bank CSV import controls and matching behavior', () => {
+  assert.match(app, /id="account-detail-import">Import bank CSV<\/button>/);
+  assert.match(app, /id="account-bank-csv" type="file" accept="\.csv,text\/csv"/);
+  assert.match(app, /function parseBankTransactionCsv\(text\)/);
+  assert.match(app, /function bankImportPlan\(accountId,rows\)/);
+  assert.match(app, /Import unmatched only/);
+  assert.match(app, /Import all as new/);
+  assert.match(app, /transaction\.reconciled=true/);
+});
