@@ -1,4 +1,4 @@
-const APP_VERSION = '0.98.7';
+const APP_VERSION = '0.98.8';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -3157,7 +3157,7 @@ function transactionEditorMarkup(group){
 `<div class="modal-actions full">`+
 `<button type="button" class="secondary" data-close>Cancel</button>`+
 `<button type="button" class="secondary danger" id="delete-edit-transaction">Delete transaction</button>`+
-`<button type="submit" class="primary" id="save-tx">Save changes</button>`+
+`<button type="button" class="primary" id="save-tx">Save changes</button>`+
 `</div>`+
 `</form>`;
 }
@@ -3215,7 +3215,7 @@ function openTransactionEditor(id,afterSave=()=>render()){
     single.querySelector('select')?.toggleAttribute('required',!enabled&&form.elements['transaction-type'].value==='expense');
     updateSplitRemaining();
   };
-  form.elements['transaction-type'].forEach(input=>input.addEventListener('change',()=>{
+  Array.from(form.elements['transaction-type']).forEach(input=>input.addEventListener('change',()=>{
     const expense=input.value==='expense'&&input.checked;m.querySelector('.split-toggle-control').hidden=!expense;if(!expense)setSplit(false);else setSplit(splitToggle.checked);
   }));
   splitToggle.addEventListener('change',()=>setSplit(splitToggle.checked));
@@ -3235,6 +3235,10 @@ function openTransactionEditor(id,afterSave=()=>render()){
   m.querySelector('#delete-edit-transaction').onclick=()=>{
     closeModal();
     deleteTransaction(group.items[0].id,afterSave);
+  };
+  m.querySelector('#save-tx').onclick=()=>{
+    if(typeof form.requestSubmit==='function')form.requestSubmit();
+    else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
   };
   form.addEventListener('submit',event=>{
     event.preventDefault();if(!form.reportValidity())return;const type=form.elements['transaction-type'].value,amount=Number(form.elements.amount.value),split=splitToggle.checked&&type==='expense',parts=type==='income'?[{
