@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.12';
+const APP_VERSION = '0.99.13';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -398,7 +398,7 @@ function daysBetween(first,second){
 }
 function isLikelyCardPayment(description,cardNames=[]){
   const text=normalizeBankText(description);
-  return /payment|autopay|paydown|thank you|online pay|credit card/.test(text)||cardNames.some(name=>text.includes(normalizeBankText(name)));
+  return /payment|pymt|pmt|autopay|paydown|thank you|online pay|credit card/.test(text)||cardNames.some(name=>text.includes(normalizeBankText(name)));
 }
 function possibleTransferPairs(){
   const checkingIds=new Set(state.accounts.filter(account=>account.type==='checking').map(account=>account.id));
