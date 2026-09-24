@@ -639,6 +639,23 @@ tr:last-child td  {
 .transaction-parent[data-edit-transaction]:hover, .transaction-parent[data-edit-account-transaction]:hover  {
    background: #fbfefc;
 }
+.transaction-payee  {
+   display: block;
+   min-width: 0;
+   overflow-wrap: anywhere;
+   word-break: break-word;
+   white-space: normal;
+}
+.transaction-tag  {
+   display: block;
+   margin-top: 2px;
+   color: var(--muted);
+   font-size: 10px;
+   line-height: 1.2;
+   overflow-wrap: anywhere;
+   word-break: break-word;
+   white-space: normal;
+}
 .transaction-status-lock  {
    display: inline-block;
    font-size: 16px;
@@ -649,6 +666,10 @@ tr:last-child td  {
 .transaction-status-lock.locked  {
    filter: none;
    opacity: 1;
+}
+.transaction-status-lock.unlocked  {
+   filter: grayscale(1);
+   opacity: .55;
 }
 .transaction-status-lock.mixed  {
    filter: none;
@@ -788,6 +809,10 @@ tr:last-child td  {
 .lock-toggle.locked  {
    filter: none;
    opacity: 1;
+}
+.lock-toggle.unlocked  {
+   filter: grayscale(1);
+   opacity: .55;
 }
 .lock-toggle:hover  {
    transform: scale(1.08);

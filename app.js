@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.9';
+const APP_VERSION = '0.99.10';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -2754,7 +2754,11 @@ pullNormalizedState=async function(){
 };
 function transactionStatusLockMarkup(items){
   const all=items.every(item=>item.cleared),none=items.every(item=>!item.cleared),label=all?'Cleared':none?'Uncleared':'Mixed';
-  return `<span class="transaction-status-lock ${all?'locked':none?'unlocked':'mixed'}" title="${label}" aria-label="${label}">${all?'🔒':none?'🔓':'◐'}</span>`;
+  return `<span class="transaction-status-lock ${all?'locked':none?'unlocked':'mixed'}" title="${label}" aria-label="${label}">🔒</span>`;
+}
+function transactionPayeeMarkup(transaction,label){
+  const payee=label||transaction.payee||transaction.type||transactionLabel(transaction),tag=transaction.tag||'';
+  return `<span class="transaction-payee">${esc(payee)}</span>${tag?`<small class="transaction-tag">${esc(tag)}</small>`:''}`;
 }
 splitBreakdownMarkup=function(items){
   return `<table class="split-detail-table">`+
@@ -2952,7 +2956,7 @@ groupedTransactionRow=function(group){
   const t=group.items[0],isSplit=group.items.length>1,total=group.items.reduce((sum,item)=>sum+Number(item.amount||0),0),detailsId=`split-details-${esc(group.key)}`;
   return `<tr class="transaction-parent" data-edit-transaction="${esc(t.id)}">`+
 `<td>${esc(t.date)}</td>`+
-`<td>${isSplit?`<button type="button" class="split-toggle" data-split-toggle="${esc(group.key)}" aria-controls="${detailsId}" aria-expanded="false">＋</button>`:''}${esc(t.payee||t.type)}${isSplit?' <small class="split-label">Split</small>':''}</td>`+
+`<td>${isSplit?`<button type="button" class="split-toggle" data-split-toggle="${esc(group.key)}" aria-controls="${detailsId}" aria-expanded="false">＋</button>`:''}${transactionPayeeMarkup(t)}${isSplit?' <small class="split-label">Split</small>':''}</td>`+
 `<td class="${t.type==='income'?'amount-in':'amount-out'}">${t.type==='income'?'+':'−'}${money(total)}</td>`+
 `<td>${isSplit?'Split transaction':esc(t.category||({income:'Income',transfer:'Transfer'}[t.type]||'—'))}</td>`+
 `<td>${esc(state.accounts.find(account=>account.id===t.accountId)?.name||'—')}</td>`+
@@ -2966,11 +2970,11 @@ groupedAccountRow=function(group,accountId){
 `<input type="checkbox" data-account-tx="${key}" aria-label="Select ${esc(t.payee||transactionLabel(t))}">`+
 `</td>`+
 `<td>${esc(t.date)}</td>`+
-`<td>${isSplit?`<button type="button" class="split-toggle" data-account-split-toggle="${key}" aria-controls="${detailsId}" aria-expanded="false">＋</button>`:''}${esc(t.payee||transactionLabel(t))}${isSplit?' <small class="split-label">Split</small>':''}</td>`+
+`<td>${isSplit?`<button type="button" class="split-toggle" data-account-split-toggle="${key}" aria-controls="${detailsId}" aria-expanded="false">＋</button>`:''}${transactionPayeeMarkup(t)}${isSplit?' <small class="split-label">Split</small>':''}</td>`+
 `<td class="${total>=0?'amount-in':'amount-out'}">${total>=0?'+':'−'}${money(Math.abs(total))}</td>`+
 `<td>${isSplit?'Split transaction':esc(t.category||({income:'Income',transfer:'Transfer'}[t.type]||'—'))}</td>`+
 `<td>`+
-`<button type="button" class="lock-toggle ${allReconciled?'locked':'unlocked'}" data-toggle-reconciled="${key}" title="${lockLabel}" aria-label="${lockLabel}">${allReconciled?'🔒':'🔓'}</button>`+
+`<button type="button" class="lock-toggle ${allReconciled?'locked':'unlocked'}" data-toggle-reconciled="${key}" title="${lockLabel}" aria-label="${lockLabel}">🔒</button>`+
 `</td>`+
 `</tr>${isSplit?`<tr id="${detailsId}" class="split-details-row" hidden><td colspan="6">${splitBreakdownMarkup(group.items)}</td></tr>`:''}`;
 };
@@ -3020,7 +3024,7 @@ renderAccountDetail=function(id){
 `<input id="account-bank-csv" type="file" accept=".csv,text/csv" hidden>`+
 `</div>`+
 `</div>`+
-`<div class="account-transaction-list account-detail-table">${groups.length?`<table><thead><tr><th></th><th>Date</th><th>Payee</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead><tbody>${groups.map(group=>groupedAccountRow(group,id)).join('')}</tbody></table>`:'<div class="empty">No transactions for this account.</div>'}</div>`+
+`<div class="account-transaction-list account-detail-table">${groups.length?`<table><thead><tr><th></th><th>Date</th><th>Payee</th><th>Amount</th><th>Category</th><th>Status</th></tr></thead><tbody>${groups.map(group=>groupedAccountRow(group,id)).join('')}</tbody></table>`:'<div class="empty">No transactions for this account.</div>'}</div>`+
 `<div class="modal-actions account-detail-actions-row">`+
 `<button class="primary" id="reconcile-selected" ${groups.length?'':'disabled'} title="Reconcile selected">🔒 Reconcile selected</button>`+
 `</div>`;
