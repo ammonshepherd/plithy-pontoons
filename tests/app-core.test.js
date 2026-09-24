@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -235,6 +235,43 @@ test('lowering an account opening balance exposes the amount over assigned', () 
     assert.equal(api.availableToAssign('2026-09'), 384.39);
     assert.equal(api.overAssigned('2026-09'), 0);
 });
+test('available-to-assign uses cumulative checking cash and carried-forward envelopes', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-02');
+    state.openingFundsMonth = '2026-01';
+    state.accounts = [{
+     id: 'checking-1', name: 'Checking', type: 'checking', openingBalance: 1000
+  }];
+    state.transactions = [
+     { id: 'income-jan', type: 'income', date: '2026-01-01', amount: 500, accountId: 'checking-1' },
+     { id: 'expense-jan', type: 'expense', date: '2026-01-15', amount: 100, category: 'Groceries', accountId: 'checking-1' },
+     { id: 'income-feb', type: 'income', date: '2026-02-01', amount: 300, accountId: 'checking-1' },
+     { id: 'expense-feb', type: 'expense', date: '2026-02-02', amount: 50, category: 'Groceries', accountId: 'checking-1' }
+  ];
+    state.assignments = {
+     '2026-01': { Groceries: 200 },
+     '2026-02': { Groceries: 100 }
+  };
+    api.setState(state);
+    assert.equal(api.checkingCashBalance('2026-02'), 1650);
+    assert.equal(api.categoryEnvelopeBalance('Groceries', '2026-02'), 150);
+    assert.equal(api.envelopeTotal('2026-02'), 150);
+    assert.equal(api.availableToAssign('2026-02'), 1500);
+});
+test('checking transfers do not change cumulative checking cash', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-02');
+    state.openingFundsMonth = '2026-01';
+    state.accounts = [
+     { id: 'checking-1', name: 'Checking 1', type: 'checking', openingBalance: 1000 },
+     { id: 'checking-2', name: 'Checking 2', type: 'checking', openingBalance: 500 }
+  ];
+    state.transactions = [{ id: 'transfer-1', type: 'transfer', date: '2026-02-01', amount: 200, accountId: 'checking-1', toAccountId: 'checking-2' }];
+    api.setState(state);
+    assert.equal(api.checkingCashBalance('2026-02'), 1500);
+});
 test('planned amounts, suggestions, and plan approval work by month', () => {
     const api = loadApp();
     const state = api.initialState();
@@ -262,10 +299,10 @@ test('available-to-assign includes income and opening funds, while remaining sub
     state.openingFunds = 100;
     state.openingFundsMonth = '2026-09';
     state.transactions.push({
-     id: 'income-1', type: 'income', date: '2026-09-01', amount: 400, category: '', accountId: 'a1'
+     id: 'income-1', type: 'income', date: '2026-09-01', amount: 400, category: '', accountId: state.accounts[0].id
   });
     state.transactions.push({
-     id: 'expense-1', type: 'expense', date: '2026-09-02', amount: 25.5, category: 'Groceries', accountId: 'a1'
+     id: 'expense-1', type: 'expense', date: '2026-09-02', amount: 25.5, category: 'Groceries', accountId: state.accounts[0].id
   });
     api.setState(state);
     assert.equal(api.availableToAssign('2026-09'), 300);
