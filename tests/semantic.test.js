@@ -180,8 +180,18 @@ test('bank-imported expenses use a persisted uncategorized category', () => {
     assert.match(app, /category:Number\(row\.amount\)<0\?ensureBankImportCategory\(\):''/);
 });
 test('account detail columns match the requested order and wrap payees', () => {
-    assert.match(app, /<th>\s*<\/th>[\s\S]*?<th>\s*Date\s*<\/th>[\s\S]*?<th>\s*Payee\s*<\/th>[\s\S]*?<th>\s*Amount\s*<\/th>[\s\S]*?<th>\s*Category\s*<\/th>[\s\S]*?<th>\s*Status\s*<\/th>[\s\S]*?<th>\s*Delete\s*<\/th>/);
+    assert.match(app, /<th>\s*<\/th><th>Date<\/th><th>Payee<\/th><th>Amount<\/th><th>Category<\/th><th>Status<\/th>/);
     assert.match(app, /groupedAccountRow=function\(group,accountId\)[\s\S]*amount-in[\s\S]*Split transaction/);
-    assert.match(css, /\.account-transaction-list th:nth-child\(3\), \.account-transaction-list td:nth-child\(3\)[\s\S]*overflow-wrap: anywhere[\s\S]*word-break: break-word/);
-    assert.match(css, /\.account-transaction-list th:nth-child\(4\), \.account-transaction-list td:nth-child\(4\)[\s\S]*text-align: right/);
+    assert.match(app, /function transactionPayeeMarkup\(transaction,label\)/);
+    assert.match(app, /groupedAccountRow=function\(group,accountId\)[\s\S]*transactionPayeeMarkup\(t\)/);
+    assert.match(css, /\.transaction-payee[\s\S]*overflow-wrap: anywhere[\s\S]*word-break: break-word/);
+    assert.match(css, /\.transaction-tag[\s\S]*font-size: 10px/);
+});
+test('activity and account statuses render locks with cleared and reconciled styling', () => {
+    assert.match(app, /function transactionStatusLockMarkup\(items\)[\s\S]*>🔒<\/span>/);
+    assert.match(app, /allReconciled=group\.items\.every\(item=>item\.reconciled\)/);
+    assert.match(app, /transactionPayeeMarkup\(t\)/);
+    assert.match(css, /\.transaction-status-lock\.locked[\s\S]*filter: none/);
+    assert.match(css, /\.transaction-status-lock\.unlocked[\s\S]*opacity: \.55/);
+    assert.match(css, /\.lock-toggle\.unlocked[\s\S]*filter: grayscale\(1\)/);
 });
