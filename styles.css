@@ -235,8 +235,8 @@ input:focus, select:focus, button:focus-visible  {
    max-width: 390px;
    margin: 0 0 18px;
    padding: 14px;
-   background: color-mix(in srgb, var(--success) 12%, var(--surface));
-   border-color: color-mix(in srgb, var(--success) 45%, var(--line));
+   border: 6px solid var(--green);
+   background: #effbf5;
 }
 .available-card span, .available-card small  {
    display: block;
@@ -246,9 +246,28 @@ input:focus, select:focus, button:focus-visible  {
 .available-card strong  {
    display: block;
    margin: 8px 0 2px;
-   font-size: 22px;
+   font-size: 30px;
    letter-spacing: -.045em;
-   color: var(--success);
+   color: var(--green);
+}
+.over-assigned-card  {
+   max-width: 390px;
+   margin: 0 0 18px;
+   padding: 14px;
+   border: 6px solid var(--red);
+   background: #fff1f2;
+}
+.over-assigned-card span, .over-assigned-card small  {
+   display: block;
+   color: var(--muted);
+   font-size: 12px;
+}
+.over-assigned-card strong  {
+   display: block;
+   margin: 8px 0 2px;
+   font-size: 30px;
+   letter-spacing: -.045em;
+   color: var(--red);
 }
 .month-plan-actions  {
    display: flex;
@@ -863,7 +882,7 @@ tr:last-child td  {
    padding: 0;
    border: 1px solid var(--line);
    border-radius: 4px;
-   background: var(--surface);
+   background: var(--panel);
    color: var(--muted);
    font-size: 14px;
    line-height: 1;

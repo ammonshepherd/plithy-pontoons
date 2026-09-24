@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.3';
+const APP_VERSION = '0.99.4';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -340,6 +340,9 @@ function availableToAssign(m=activeMonth){
   const openingFunds=m===state.openingFundsMonth?(accountOpeningFunds>0?accountOpeningFunds:Number(state.openingFunds||0)):0;
   return Math.round((incomeTotal(m)+openingFunds-assignedTotal(m))*100)/100;
 }
+function overAssigned(m=activeMonth){
+  return Math.max(0,Math.round(-availableToAssign(m)*100)/100);
+}
 function previousMonth(m=activeMonth){
   const d=new Date(`${m}-01T12:00:00`);
   d.setMonth(d.getMonth()-1);
@@ -477,15 +480,20 @@ function transactionRecordsFromParts(parts,{
 }
 function render(){
   const available=availableToAssign();
+  const over=overAssigned();
   const locked=!hasExplicitPlan(activeMonth);
   document.getElementById('month-title').textContent=new Date(`${activeMonth}-01T12:00:00`).toLocaleDateString('en-US',{
     month:'long',year:'numeric'
   });
-  document.getElementById('available-summary').innerHTML=available>0?`<article class="summary-card available-card">`+
+  document.getElementById('available-summary').innerHTML=(available>0?`<article class="summary-card available-card">`+
 `<span>Available to assign</span>`+
 `<strong>${money(available)}</strong>`+
 `<small>Income and opening funds not assigned to categories</small>`+
-`</article>`:'';
+`</article>`:'')+(over>0?`<article class="summary-card over-assigned-card">`+
+`<span>Over assigned</span>`+
+`<strong>${money(over)}</strong>`+
+`<small>Reassign money from categories until this amount reaches $0.00.</small>`+
+`</article>`:'');
   const planActions=document.getElementById('month-plan-actions');
   if(planActions){
     const future=activeMonth>monthKey(),explicit=hasExplicitPlan(activeMonth),suggested=hasSuggestedPlan(activeMonth),show=!explicit||suggested;
@@ -1445,6 +1453,7 @@ function openAccountEditor(id){
     closeModal();
     render();
     void flushCloudSave();
+    if(availableToAssign()<0)appMessage('Reassign money',`You are over assigned by ${money(overAssigned())}. Reassign money from one or more categories.`,'warning');
   };
 }
 function addAccountEditButtons(){

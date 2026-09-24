@@ -88,8 +88,18 @@ test('saving an Assigned edit rerenders the Available to assign summary', () => 
 });
 
 test('available card uses green money styling', () => {
-    assert.match(fs.readFileSync(path.join(root, 'styles.css'), 'utf8'), /\.available-card\s*\{[\s\S]*background:[\s\S]*var\(--success\)/);
-    assert.match(fs.readFileSync(path.join(root, 'styles.css'), 'utf8'), /\.available-card strong\s*\{[\s\S]*color:\s*var\(--success\)/);
+    const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+    assert.match(css, /\.available-card\s*\{[\s\S]*border:\s*6px solid var\(--green\)[\s\S]*background:\s*#effbf5/);
+    assert.match(css, /\.available-card strong\s*\{[\s\S]*font-size:\s*30px[\s\S]*color:\s*var\(--green\)/);
+});
+
+test('over-assigned warning has a red card and reassign guidance', () => {
+    assert.match(app, /function overAssigned\(m=activeMonth\)/);
+    assert.match(app, /class="summary-card over-assigned-card"/);
+    assert.match(app, /Reassign money from categories until this amount reaches/);
+    const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+    assert.match(css, /\.over-assigned-card\s*\{[\s\S]*border:\s*6px solid var\(--red\)[\s\S]*background:\s*#fff1f2/);
+    assert.match(css, /\.over-assigned-card strong\s*\{[\s\S]*font-size:\s*30px[\s\S]*color:\s*var\(--red\)/);
 });
 
 test('settings exposes actions for moving groups', () => {
