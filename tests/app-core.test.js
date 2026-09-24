@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -167,6 +167,8 @@ test('transaction category selects preserve groups, order, and Remaining balance
 test('category layouts support adding, moving, removing, and renaming categories', () => {
     const api = loadApp();
     const state = preparedState(api);
+    state.accounts[0].openingBalance = 400;
+    state.openingFundsMonth = '2026-09';
     api.addNameToMonthLayout('Groceries', 'Monthly Autopay');
     assert.ok(api.monthGroups('2026-09').find(([name]) => name === 'Monthly Autopay')[1].includes('Groceries'));
     api.renameNameInMonthLayouts('Groceries', 'Food');
@@ -426,4 +428,47 @@ test('credit card CSV parsing maps Debit and Credit to signed account transactio
     assert.equal(payment.type, 'income');
     assert.equal(payment.amount, 6.86);
     assert.equal(purchase.accountId, accountId);
+});
+test('credit card purchases reserve cash without changing Available to Assign', () => {
+    const api = loadApp();
+    const state = preparedState(api);
+    state.accounts[0].openingBalance = 400;
+    state.openingFundsMonth = '2026-09';
+    const cardId = '33333333-3333-4333-8333-333333333333';
+    state.accounts.push({ id: cardId, name: 'Credit Card', type: 'credit', openingBalance: -500 });
+    state.transactions.push({ id: 'card-purchase', type: 'expense', date: '2026-09-23', amount: 50, payee: 'Card purchase', accountId: cardId, category: 'Groceries' });
+    api.setState(state);
+    assert.equal(api.creditCardPaymentReserve(cardId, '2026-09'), 50);
+    assert.equal(api.totalCreditCardPaymentReserve('2026-09'), 50);
+    assert.equal(api.availableToAssign('2026-09'), 200);
+});
+test('credit card payments release reserves and reduce debt without creating income', () => {
+    const api = loadApp();
+    const state = preparedState(api);
+    state.accounts[0].openingBalance = 400;
+    state.openingFundsMonth = '2026-09';
+    const checkingId = state.accounts[0].id;
+    const cardId = '44444444-4444-4444-8444-444444444444';
+    state.accounts.push({ id: cardId, name: 'Credit Card', type: 'credit', openingBalance: -500 });
+    state.transactions.push(
+      { id: 'card-purchase', type: 'expense', date: '2026-09-20', amount: 100, payee: 'Card purchase', accountId: cardId, category: 'Groceries' },
+      { id: 'card-payment', type: 'transfer', date: '2026-09-23', amount: 40, payee: 'Credit Card Payment', accountId: checkingId, toAccountId: cardId }
+    );
+    api.setState(state);
+    assert.equal(api.creditCardPaymentReserve(cardId, '2026-09'), 60);
+    assert.equal(api.accountBalance(state.accounts[1]), -560);
+    assert.equal(api.availableToAssign('2026-09'), 200);
+});
+test('credit card refunds restore their category and release the reserved amount', () => {
+    const api = loadApp();
+    const state = preparedState(api);
+    const cardId = '55555555-5555-4555-8555-555555555555';
+    state.accounts.push({ id: cardId, name: 'Credit Card', type: 'credit', openingBalance: 0 });
+    state.transactions.push(
+      { id: 'card-purchase', type: 'expense', date: '2026-09-20', amount: 100, payee: 'Card purchase', accountId: cardId, category: 'Groceries' },
+      { id: 'card-refund', type: 'income', date: '2026-09-22', amount: 25, payee: 'Refund', accountId: cardId, category: 'Groceries' }
+    );
+    api.setState(state);
+    assert.equal(api.categorySpentThrough('Groceries', '2026-09'), 75);
+    assert.equal(api.creditCardPaymentReserve(cardId, '2026-09'), 75);
 });

@@ -269,6 +269,92 @@ input:focus, select:focus, button:focus-visible  {
    letter-spacing: -.045em;
    color: var(--red);
 }
+.credit-card-payment-summary  {
+   margin: 0 0 18px;
+   padding: 14px;
+   border: 1px solid #d8e6ef;
+   border-radius: 12px;
+   background: #f8fbfd;
+}
+.credit-card-payment-summary-heading  {
+   display: flex;
+   align-items: flex-start;
+   justify-content: space-between;
+   gap: 12px;
+}
+.credit-card-payment-summary h2  {
+   margin: 0;
+   font-size: 16px;
+}
+.credit-card-payment-summary p  {
+   margin: 3px 0 0;
+   color: var(--muted);
+   font-size: 12px;
+}
+.credit-card-payment-summary-heading > strong  {
+   color: var(--green);
+   font-size: 20px;
+}
+.credit-card-payment-rows  {
+   display: grid;
+   gap: 6px;
+   margin-top: 12px;
+}
+.credit-card-payment-row  {
+   display: grid;
+   grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(75px, 1fr));
+   gap: 8px;
+   padding: 8px 0;
+   border-top: 1px solid #e4edf2;
+}
+.credit-card-payment-row span  {
+   min-width: 0;
+}
+.credit-card-payment-row small  {
+   display: block;
+   color: var(--muted);
+   font-size: 10px;
+}
+.credit-card-payment-row strong  {
+   display: block;
+   overflow-wrap: anywhere;
+}
+.credit-card-payment-row span:not(:first-child)  {
+   text-align: right;
+}
+.unreserved-debt strong  {
+   color: var(--red);
+}
+.transfer-review-notice  {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 10px;
+   margin-top: 10px;
+   padding-top: 10px;
+   border-top: 1px solid #e4edf2;
+   color: #6c5725;
+   font-size: 12px;
+}
+.transfer-review-list  {
+   display: grid;
+   gap: 10px;
+}
+.transfer-review-item  {
+   padding: 10px;
+   border: 1px solid var(--line);
+   border-radius: 8px;
+   background: #fbfcfe;
+}
+.transfer-review-item p  {
+   margin: 0 0 8px;
+   color: var(--muted);
+   font-size: 12px;
+}
+.transfer-review-item p + p  {
+   padding-top: 8px;
+   border-top: 1px solid var(--line);
+}
 .month-plan-actions  {
    display: flex;
    flex-direction: column;
