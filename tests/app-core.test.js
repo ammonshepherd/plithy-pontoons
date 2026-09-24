@@ -404,3 +404,26 @@ test('bank CSV parsing and matching reconciles manual transactions without dupli
     assert.equal(imported.amount, 2000);
     assert.equal(imported.accountId, accountId);
 });
+test('credit card CSV parsing maps Debit and Credit to signed account transactions', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    const accountId = '22222222-2222-4222-8222-222222222222';
+    state.accounts = [{
+     id: accountId, name: 'Credit Card', type: 'credit', openingBalance: 0
+  }];
+    api.setState(state);
+    const rows = api.parseBankTransactionCsv('Transaction Date,Posted Date,Card No.,Description,Category,Debit,Credit\n2026-09-23,2026-09-24,4160,JODY MOORE COACHING,Other Services,59.00,\n2026-09-23,2026-09-24,4160,AMAZON MKTPLACE PMTS,Merchandise,,6.86');
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0].sourceFormat, 'credit-card');
+    assert.equal(rows[0].date, '2026-09-23');
+    assert.equal(rows[0].description, 'JODY MOORE COACHING');
+    assert.equal(rows[0].amount, -59);
+    assert.equal(rows[1].amount, 6.86);
+    const purchase = api.bankTransactionFromRow(rows[0], accountId);
+    const payment = api.bankTransactionFromRow(rows[1], accountId);
+    assert.equal(purchase.type, 'expense');
+    assert.equal(purchase.amount, 59);
+    assert.equal(payment.type, 'income');
+    assert.equal(payment.amount, 6.86);
+    assert.equal(purchase.accountId, accountId);
+});
