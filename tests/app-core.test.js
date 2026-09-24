@@ -246,6 +246,9 @@ test('bank CSV parsing and matching reconciles manual transactions without dupli
   const plan = api.bankImportPlan(accountId, rows);
   assert.equal(plan[0].match.id, 'manual-1');
   assert.equal(plan[1].match, null);
+  const importedExpense = api.bankTransactionFromRow(rows[0], accountId);
+  assert.equal(importedExpense.category, 'Uncategorized');
+  assert.ok(api.getState().categories.Uncategorized);
   const imported = api.bankTransactionFromRow(rows[1], accountId);
   assert.equal(imported.type, 'income');
   assert.equal(imported.amount, 2000);

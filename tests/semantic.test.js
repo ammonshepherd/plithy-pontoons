@@ -192,3 +192,8 @@ test('settings omits the removed Planning suggestions section', () => {
   assert.doesNotMatch(html, /<h2>Planning suggestions<\/h2>/);
   assert.doesNotMatch(html, /New monthly plans use the previous month's actual spending/);
 });
+
+test('bank-imported expenses use a persisted uncategorized category', () => {
+  assert.match(app, /function ensureBankImportCategory\(\)/);
+  assert.match(app, /category:Number\(row\.amount\)<0\?ensureBankImportCategory\(\):''/);
+});
