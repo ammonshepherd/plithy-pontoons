@@ -412,16 +412,18 @@ test('credit card CSV parsing maps Debit and Credit to signed account transactio
      id: accountId, name: 'Credit Card', type: 'credit', openingBalance: 0
   }];
     api.setState(state);
-    const rows = api.parseBankTransactionCsv('Transaction Date,Description,Debit,Credit\n09/20/26,Grocery Store,$45.67,\n09/21/26,Payment,,250.00');
+    const rows = api.parseBankTransactionCsv('Transaction Date,Posted Date,Card No.,Description,Category,Debit,Credit\n2026-09-23,2026-09-24,4160,JODY MOORE COACHING,Other Services,59.00,\n2026-09-23,2026-09-24,4160,AMAZON MKTPLACE PMTS,Merchandise,,6.86');
     assert.equal(rows.length, 2);
     assert.equal(rows[0].sourceFormat, 'credit-card');
-    assert.equal(rows[0].amount, -45.67);
-    assert.equal(rows[1].amount, 250);
+    assert.equal(rows[0].date, '2026-09-23');
+    assert.equal(rows[0].description, 'JODY MOORE COACHING');
+    assert.equal(rows[0].amount, -59);
+    assert.equal(rows[1].amount, 6.86);
     const purchase = api.bankTransactionFromRow(rows[0], accountId);
     const payment = api.bankTransactionFromRow(rows[1], accountId);
     assert.equal(purchase.type, 'expense');
-    assert.equal(purchase.amount, 45.67);
+    assert.equal(purchase.amount, 59);
     assert.equal(payment.type, 'income');
-    assert.equal(payment.amount, 250);
+    assert.equal(payment.amount, 6.86);
     assert.equal(purchase.accountId, accountId);
 });
