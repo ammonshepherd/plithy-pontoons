@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,paymentMatchScore,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -471,4 +471,48 @@ test('credit card refunds restore their category and release the reserved amount
     api.setState(state);
     assert.equal(api.categorySpentThrough('Groceries', '2026-09'), 75);
     assert.equal(api.creditCardPaymentReserve(cardId, '2026-09'), 75);
+});
+test('payment matching recognizes bank abbreviations such as online pymt', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    const checkingId = '66666666-6666-4666-8666-666666666666';
+    const cardId = '77777777-7777-4777-8777-777777777777';
+    state.accounts = [
+      { id: checkingId, name: 'Checking', type: 'checking', openingBalance: 0 },
+      { id: cardId, name: 'Visa', type: 'credit', openingBalance: -500 }
+    ];
+    state.transactions = [
+      { id: 'checking-payment', type: 'expense', date: '2026-09-20', amount: 123.45, payee: 'Online Visa Payment', accountId: checkingId },
+      { id: 'card-payment', type: 'income', date: '2026-09-21', amount: 123.45, payee: 'VISA ONLINE PYMT', accountId: cardId }
+    ];
+    api.setState(state);
+    const pairs = api.possibleTransferPairs();
+    assert.equal(pairs.length, 1);
+    assert.equal(pairs[0].checking.id, 'checking-payment');
+    assert.equal(pairs[0].card.id, 'card-payment');
+});
+test('payment matching scores exact amounts, dates, and payee evidence', () => {
+    const api = loadApp();
+    const sameDay = api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Visa payment' },
+      { amount: 100, date: '2026-09-20', payee: 'Online pymt' },
+      ['Visa']
+    );
+    const reviewOnly = api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Bank entry' },
+      { amount: 100, date: '2026-09-23', payee: 'Account credit' },
+      ['Visa']
+    );
+    assert.equal(sameDay.confidence, 'High');
+    assert.equal(reviewOnly.confidence, 'Review');
+    assert.equal(api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Payment' },
+      { amount: 101, date: '2026-09-20', payee: 'Payment' },
+      ['Visa']
+    ), null);
+    assert.equal(api.paymentMatchScore(
+      { amount: 100, date: '2026-09-20', payee: 'Payment' },
+      { amount: 100, date: '2026-09-28', payee: 'Payment' },
+      ['Visa']
+    ), null);
 });

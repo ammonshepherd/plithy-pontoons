@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.12';
+const APP_VERSION = '0.99.14';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -398,20 +398,33 @@ function daysBetween(first,second){
 }
 function isLikelyCardPayment(description,cardNames=[]){
   const text=normalizeBankText(description);
-  return /payment|autopay|paydown|thank you|online pay|credit card/.test(text)||cardNames.some(name=>text.includes(normalizeBankText(name)));
+  return /payment|pymt|pmt|autopay|paydown|thank you|online pay|credit card/.test(text)||cardNames.some(name=>text.includes(normalizeBankText(name)));
+}
+function paymentMatchScore(checking,card,cardNames=[]){
+  const amountMatch=Math.round(Number(checking.amount)*100)===Math.round(Number(card.amount)*100);
+  if(!amountMatch)return null;
+  const days=daysBetween(checking.date,card.date);
+  if(days>7)return null;
+  const dateScore=days===0?30:days===1?25:days<=3?20:10;
+  const checkingPayment=isLikelyCardPayment(checking.payee||checking.memo,cardNames);
+  const cardPayment=isLikelyCardPayment(card.payee||card.memo,cardNames);
+  const payeeScore=(checkingPayment?15:0)+(cardPayment?15:0);
+  const cardNameScore=cardNames.some(name=>normalizeBankText(checking.payee||checking.memo).includes(normalizeBankText(name)))?10:0;
+  const score=50+dateScore+payeeScore+cardNameScore;
+  return {score,days,confidence:score>=100?'High':score>=85?'Medium':'Review'};
 }
 function possibleTransferPairs(){
   const checkingIds=new Set(state.accounts.filter(account=>account.type==='checking').map(account=>account.id));
   const cards=state.accounts.filter(account=>account.type==='credit');
   const cardNames=cards.map(account=>account.name);
-  const checkingPayments=state.transactions.filter(transaction=>transaction.type==='expense'&&checkingIds.has(transaction.accountId)&&isLikelyCardPayment(transaction.payee||transaction.memo,cardNames));
-  const cardCredits=state.transactions.filter(transaction=>transaction.type==='income'&&cards.some(account=>account.id===transaction.accountId)&&isLikelyCardPayment(transaction.payee||transaction.memo));
+  const checkingPayments=state.transactions.filter(transaction=>transaction.type==='expense'&&checkingIds.has(transaction.accountId));
+  const cardCredits=state.transactions.filter(transaction=>transaction.type==='income'&&cards.some(account=>account.id===transaction.accountId));
+  const candidates=cardCredits.flatMap(card=>checkingPayments.map(checking=>{const match=paymentMatchScore(checking,card,cardNames);return match?{checking,card,...match}:null}).filter(Boolean)).sort((a,b)=>b.score-a.score);
   const used=new Set();
-  return cardCredits.flatMap(cardCredit=>{
-    const match=checkingPayments.find(payment=>!used.has(payment.id)&&Number(payment.amount)===Number(cardCredit.amount)&&daysBetween(payment.date,cardCredit.date)<=7);
-    if(!match)return [];
-    used.add(match.id);
-    return [{checking:match,card:cardCredit}];
+  const usedCards=new Set();
+  return candidates.filter(candidate=>{
+    if(used.has(candidate.checking.id)||usedCards.has(candidate.card.id))return false;
+    used.add(candidate.checking.id);usedCards.add(candidate.card.id);return true;
   });
 }
 function creditCardPaymentSummaryMarkup(){
@@ -451,7 +464,7 @@ function openTransferReview(){
     return;
   }
   const m=modal('Review credit-card payments',`<p class="modal-intro">These transactions may represent the same payment. Review each pair before converting it to one transfer.</p>`+
-`<div class="transfer-review-list">${pairs.map((pair,index)=>`<article class="transfer-review-item"><p><strong>${esc(pair.checking.payee||'Checking payment')}</strong><br>${esc(pair.checking.date)} · ${money(pair.checking.amount)} from ${esc(state.accounts.find(account=>account.id===pair.checking.accountId)?.name||'Checking')}</p><p><strong>${esc(pair.card.payee||'Credit-card credit')}</strong><br>${esc(pair.card.date)} · ${money(pair.card.amount)} to ${esc(state.accounts.find(account=>account.id===pair.card.accountId)?.name||'Credit card')}</p><button type="button" class="primary" data-convert-transfer="${index}">Convert to transfer</button></article>`).join('')}</div>`+
+`<div class="transfer-review-list">${pairs.map((pair,index)=>`<article class="transfer-review-item"><p><strong>${esc(pair.checking.payee||'Checking payment')}</strong><br>${esc(pair.checking.date)} · ${money(pair.checking.amount)} from ${esc(state.accounts.find(account=>account.id===pair.checking.accountId)?.name||'Checking')}</p><p><strong>${esc(pair.card.payee||'Credit-card credit')}</strong><br>${esc(pair.card.date)} · ${money(pair.card.amount)} to ${esc(state.accounts.find(account=>account.id===pair.card.accountId)?.name||'Credit card')}</p><p><strong>${esc(pair.confidence)} confidence</strong> · ${pair.days} day${pair.days===1?'':'s'} apart · score ${pair.score}</p><button type="button" class="primary" data-convert-transfer="${index}">Convert to transfer</button></article>`).join('')}</div>`+
 `<div class="modal-actions"><button type="button" class="secondary" data-close>Keep separate</button></div>`);
   m.querySelector('[data-close]').onclick=closeModal;
   m.querySelectorAll('[data-convert-transfer]').forEach(button=>button.onclick=()=>{
