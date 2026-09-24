@@ -197,3 +197,10 @@ test('bank-imported expenses use a persisted uncategorized category', () => {
   assert.match(app, /function ensureBankImportCategory\(\)/);
   assert.match(app, /category:Number\(row\.amount\)<0\?ensureBankImportCategory\(\):''/);
 });
+
+test('account detail columns match the requested order and wrap payees', () => {
+  assert.match(app, /<th><\/th><th>Date<\/th><th>Payee<\/th><th>Amount<\/th><th>Category<\/th><th>Status<\/th><th>Delete<\/th>/);
+  assert.match(app, /groupedAccountRow=function\(group,accountId\)[\s\S]*amount-in[\s\S]*Split transaction/);
+  assert.match(css, /\.account-transaction-list th:nth-child\(3\), \.account-transaction-list td:nth-child\(3\)[\s\S]*overflow-wrap: anywhere[\s\S]*word-break: break-word/);
+  assert.match(css, /\.account-transaction-list th:nth-child\(4\), \.account-transaction-list td:nth-child\(4\)[\s\S]*text-align: right/);
+});
