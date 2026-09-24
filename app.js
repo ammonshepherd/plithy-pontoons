@@ -1,5 +1,6 @@
-const APP_VERSION = '0.99.4';
+const APP_VERSION = '0.99.5';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
+const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
 const DEFAULT_GROUPS = [
@@ -1378,6 +1379,12 @@ function renderAccountDetail(id){
 }
 openAccountTransactions=function(id){
   activeAccountDetailId=id;
+  try{
+    localStorage.setItem(ACCOUNT_DETAIL_STORAGE_KEY,id);
+  }
+  catch(error){
+    console.warn('Could not remember active account:',error.message);
+  }
   renderAccountDetail(id);
 };
 function deleteAccount(id){
@@ -1400,10 +1407,19 @@ function deleteAccount(id){
     state.transactions.forEach(transaction=>{
       if(transaction.accountId===id)transaction.accountId='';if(transaction.toAccountId===id)transaction.toAccountId='';
     });
-    if(activeAccountDetailId===id)activeAccountDetailId=null;
+    if(activeAccountDetailId===id){
+      activeAccountDetailId=null;
+      try{
+        localStorage.removeItem(ACCOUNT_DETAIL_STORAGE_KEY);
+      }
+      catch(error){
+        console.warn('Could not forget active account:',error.message);
+      }
+    }
+    const detailIsOpen=activeAccountDetailId===id;
     save();
     closeModal();
-    render();
+    if(detailIsOpen)renderAccountDetail(id);else render();
     void flushCloudSave();
   };
 }
@@ -1467,6 +1483,15 @@ const originalRenderAccounts=renderAccounts;
 renderAccounts=function(){
   originalRenderAccounts();
   addAccountEditButtons();
+  if(!activeAccountDetailId&&rememberedView()==='accounts-view'){
+    try{
+      const savedAccountId=localStorage.getItem(ACCOUNT_DETAIL_STORAGE_KEY);
+      if(savedAccountId&&state.accounts.some(account=>account.id===savedAccountId))activeAccountDetailId=savedAccountId;
+    }
+    catch(error){
+      console.warn('Could not restore active account:',error.message);
+    }
+  }
   if(activeAccountDetailId)renderAccountDetail(activeAccountDetailId);
   else{
     const root=document.getElementById('account-detail-view');

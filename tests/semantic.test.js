@@ -54,6 +54,7 @@ test('selected app view is remembered across refreshes', () => {
     assert.match(app, /localStorage\.setItem\(VIEW_STORAGE_KEY,viewId\)/);
     assert.match(app, /function rememberedView\(\)/);
     assert.match(app, /setup\(\);[\s\S]*showView\(rememberedView\(\)/);
+    assert.match(app, /ACCOUNT_DETAIL_STORAGE_KEY/);
 });
 test('cloud refresh uses lifecycle events without interval polling', () => {
     assert.match(app, /window\.addEventListener\('focus',refreshBudgetFromCloud\)/);
