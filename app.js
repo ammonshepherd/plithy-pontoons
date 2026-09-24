@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.5';
+const APP_VERSION = '0.99.6';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -1426,7 +1426,7 @@ function deleteAccount(id){
 function openAccountEditor(id){
   const a=state.accounts.find(x=>x.id===id);
   if(!a)return;
-  const m=modal(`Edit ${esc(a.name)}`,`<div class="form-grid">`+
+  const m=modal(`Edit ${esc(a.name)}`,`<form id="account-edit-form" class="form-grid">`+
 `<label class="form-field full">Account name<input id="edit-account-name" value="${esc(a.name)}">`+
 `</label>`+
 `<label class="form-field full">Notes<input id="edit-account-notes" value="${esc(a.notes||'')}" placeholder="Optional note">`+
@@ -1441,16 +1441,18 @@ function openAccountEditor(id){
 `</label>`+
 `</div>`+
 `<div class="modal-actions">`+
-`<button class="secondary danger" id="delete-account-edit">Delete Account</button>`+
-`<button class="secondary" data-close>Cancel</button>`+
-`<button class="primary" id="save-account-edit">Save changes</button>`+
-`</div>`);
+`<button type="button" class="secondary danger" id="delete-account-edit">Delete Account</button>`+
+`<button type="button" class="secondary" data-close>Cancel</button>`+
+`<button type="submit" class="primary" id="save-account-edit">Save changes</button>`+
+`</div>`+
+`</form>`);
   m.querySelector('[data-close]').onclick=closeModal;
   m.querySelector('#delete-account-edit').onclick=()=>{
     closeModal();
     deleteAccount(id);
   };
-  m.querySelector('#save-account-edit').onclick=()=>{
+  m.querySelector('#account-edit-form').addEventListener('submit',event=>{
+    event.preventDefault();
     const name=m.querySelector('#edit-account-name').value.trim();
     if(!name)return;
     const type=m.querySelector('#edit-account-type').value;
@@ -1465,12 +1467,13 @@ function openAccountEditor(id){
     a.notes=m.querySelector('#edit-account-notes').value.trim();
     a.type=type;
     a.openingBalance=openingBalance;
+    const detailIsOpen=activeAccountDetailId===id;
     save();
     closeModal();
-    render();
+    if(detailIsOpen)renderAccountDetail(id);else render();
     void flushCloudSave();
     if(availableToAssign()<0)appMessage('Reassign money',`You are over assigned by ${money(overAssigned())}. Reassign money from one or more categories.`,'warning');
-  };
+  });
 }
 function addAccountEditButtons(){
   document.querySelectorAll('[data-account-card]').forEach(card=>{
