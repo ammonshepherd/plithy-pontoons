@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.10';
+const APP_VERSION = '0.99.11';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -3077,17 +3077,26 @@ function parseBankTransactionCsv(text){
   const rows=parseCsv(String(text));
   if(!rows.length)throw new Error('The CSV file is empty.');
   const headers=rows[0].map(header=>String(header).toLowerCase().replace(/\s+/g,' ').trim());
-  const index=name=>headers.indexOf(name);
-  const required=['date','description','amount'];
-  if(required.some(name=>index(name)<0))throw new Error('The bank CSV must contain Date, Description, and Amount columns.');
+  const indexOf=names=>names.map(name=>headers.indexOf(name)).find(index=>index>=0)??-1;
+  const dateIndex=indexOf(['date','transaction date']);
+  const descriptionIndex=indexOf(['description']);
+  const amountIndex=indexOf(['amount']);
+  const debitIndex=indexOf(['debit']);
+  const creditIndex=indexOf(['credit']);
+  const creditCardFormat=dateIndex===headers.indexOf('transaction date')&&descriptionIndex>=0&&(debitIndex>=0||creditIndex>=0);
+  if(dateIndex<0||descriptionIndex<0||(!creditCardFormat&&amountIndex<0))throw new Error('The bank CSV must contain Date, Description, and Amount columns, or Transaction Date, Description, Debit, and Credit columns.');
   const parsed=[];
   for(const row of rows.slice(1)){
-    const date=normalizeBankDate(row[index('date')]),description=String(row[index('description')]||'').trim(),rawAmount=String(row[index('amount')]||'').trim(),amount=parseBankAmount(rawAmount);
+    const date=normalizeBankDate(row[dateIndex]),description=String(row[descriptionIndex]||'').trim();
+    const rawAmount=creditCardFormat?'':String(row[amountIndex]||'').trim();
+    const debit=creditCardFormat?parseBankAmount(row[debitIndex]||''):NaN;
+    const credit=creditCardFormat?parseBankAmount(row[creditIndex]||''):NaN;
+    const amount=creditCardFormat?(Number.isFinite(debit)&&debit!==0?-Math.abs(debit):Number.isFinite(credit)&&credit!==0?Math.abs(credit):NaN):parseBankAmount(rawAmount);
     if(!date&&!description&&!rawAmount)continue;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('Each bank transaction must have a Date in YYYY-MM-DD format.');
     if(!Number.isFinite(amount))throw new Error('Each bank transaction must have a numeric Amount.');
     parsed.push({
-      accountId:String(row[index('account id')]||'').trim(),bankTransactionId:String(row[index('transaction id')]||'').trim(),date,description,checkNumber:String(row[index('check number')]||'').trim(),category:String(row[index('category')]||'').trim(),tags:String(row[index('tags')]||'').trim(),amount,balance:String(row[index('balance')]||'').trim()
+      accountId:String(row[indexOf(['account id'])]||'').trim(),bankTransactionId:String(row[indexOf(['transaction id'])]||'').trim(),date,description,checkNumber:String(row[indexOf(['check number'])]||'').trim(),category:String(row[indexOf(['category'])]||'').trim(),tags:String(row[indexOf(['tags'])]||'').trim(),amount,balance:String(row[indexOf(['balance'])]||'').trim(),sourceFormat:creditCardFormat?'credit-card':'bank'
     });
   }
   return parsed;
@@ -3126,6 +3135,8 @@ function bankImportPlan(accountId,rows){
   }));
 }
 function applyBankImport(accountId,rows,mode='unmatched'){
+  const account=state.accounts.find(item=>item.id===accountId);
+  if(rows.some(row=>row.sourceFormat==='credit-card')&&account?.type!=='credit')throw new Error('Credit card CSVs can only be imported into a credit card account.');
   const plan=bankImportPlan(accountId,rows);
   if(mode==='unmatched')plan.filter(item=>item.match).forEach(item=>{
     const group=transactionGroups(accountTransactions(accountId)).find(group=>group.items.some(transaction=>transaction.id===item.match.id));(group?.items||[item.match]).forEach(transaction=>{
@@ -3139,6 +3150,8 @@ function applyBankImport(accountId,rows,mode='unmatched'){
   };
 }
 function openBankImportReview(accountId,rows){
+  const account=state.accounts.find(item=>item.id===accountId);
+  if(rows.some(row=>row.sourceFormat==='credit-card')&&account?.type!=='credit')throw new Error('Credit card CSVs can only be imported into a credit card account.');
   const plan=bankImportPlan(accountId,rows),matched=plan.filter(item=>item.match).length,unmatched=plan.length-matched,preview=plan.slice(0,8).map(item=>'<li>'+esc(item.row.date)+' — '+esc(item.row.description)+' — '+money(Math.abs(item.row.amount))+' '+(item.match?'(matched)':'(new)')+'</li>').join('');
   modal('Review bank import','<p>'+matched+' matched, '+unmatched+' new transaction'+(unmatched===1?'':'s')+'. Matched manual transactions will be marked cleared and reconciled; transactions are never deleted.</p><ul class="bank-import-preview">'+preview+'</ul><div class="modal-actions"><button type="button" class="secondary" id="bank-import-all">Import all as new</button><button type="button" id="bank-import-unmatched">Import unmatched only</button></div>');
   const finish=mode=>{
