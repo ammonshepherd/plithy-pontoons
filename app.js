@@ -1,4 +1,4 @@
-const APP_VERSION = '0.98.8';
+const APP_VERSION = '0.98.9';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -3157,7 +3157,7 @@ function transactionEditorMarkup(group){
 `<div class="modal-actions full">`+
 `<button type="button" class="secondary" data-close>Cancel</button>`+
 `<button type="button" class="secondary danger" id="delete-edit-transaction">Delete transaction</button>`+
-`<button type="button" class="primary" id="save-tx">Save changes</button>`+
+`<button type="button" class="primary" id="save-tx">Save transaction</button>`+
 `</div>`+
 `</form>`;
 }
@@ -3236,12 +3236,10 @@ function openTransactionEditor(id,afterSave=()=>render()){
     closeModal();
     deleteTransaction(group.items[0].id,afterSave);
   };
-  m.querySelector('#save-tx').onclick=()=>{
-    if(typeof form.requestSubmit==='function')form.requestSubmit();
-    else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
-  };
-  form.addEventListener('submit',event=>{
-    event.preventDefault();if(!form.reportValidity())return;const type=form.elements['transaction-type'].value,amount=Number(form.elements.amount.value),split=splitToggle.checked&&type==='expense',parts=type==='income'?[{
+  const saveEditedTransaction=event=>{
+    event?.preventDefault();
+    if(!form.reportValidity())return;
+    const type=form.elements['transaction-type'].value,amount=Number(form.elements.amount.value),split=splitToggle.checked&&type==='expense',parts=type==='income'?[{
       category:'',amount
     }]:split?[...rows.querySelectorAll('.split-row')].map(row=>({
       category:row.querySelector('input[type="hidden"]')?.value||'',amount:Number(row.querySelector('.split-amount').value||0)
@@ -3276,7 +3274,9 @@ function openTransactionEditor(id,afterSave=()=>render()){
         delete record.splitGroupId;delete record.splitIndex;delete record.splitCount;
       }
     });const oldIds=new Set(group.items.map(item=>item.id));state.transactions=state.transactions.filter(item=>!oldIds.has(item.id)).concat(records);save();closeModal();afterSave();
-  });
+  };
+  m.querySelector('#save-tx').onclick=saveEditedTransaction;
+  form.addEventListener('submit',saveEditedTransaction);
   setSplit(splitToggle.checked);
   updateSplitRemaining();
 }

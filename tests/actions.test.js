@@ -52,8 +52,9 @@ test('forms, delegated controls, and generated actions have handlers', () => {
 });
 
 test('account transaction editor explicitly submits when Save changes is clicked', () => {
-    assert.match(app, /<button type="button" class="primary" id="save-tx">Save changes<\/button>/);
-    assert.match(app, /m\.querySelector\('#save-tx'\)\.onclick=\(\)=>\{/);
-    assert.match(app, /form\.requestSubmit\(\)/);
-    assert.match(app, /form\.addEventListener\('submit'/);
+    assert.match(app, /<button type="button" class="primary" id="save-tx">Save transaction<\/button>/);
+    assert.match(app, /const saveEditedTransaction=event=>\{/);
+    assert.match(app, /m\.querySelector\('#save-tx'\)\.onclick=saveEditedTransaction/);
+    assert.match(app, /form\.addEventListener\('submit',saveEditedTransaction\)/);
+    assert.doesNotMatch(app, /form\.requestSubmit\(\)/);
 });
