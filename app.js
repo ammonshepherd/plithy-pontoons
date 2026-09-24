@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.7';
+const APP_VERSION = '0.99.8';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -1435,7 +1435,8 @@ function deleteAccount(id){
 function openAccountEditor(id){
   const a=state.accounts.find(x=>x.id===id);
   if(!a)return;
-  const m=modal(`Edit ${esc(a.name)}`,`<form id="account-edit-form" class="form-grid">`+
+  const m=modal(`Edit ${esc(a.name)}`,`<form id="account-edit-form">`+
+`<div class="form-grid">`+
 `<label class="form-field full">Account name<input id="edit-account-name" value="${esc(a.name)}">`+
 `</label>`+
 `<label class="form-field full">Notes<input id="edit-account-notes" value="${esc(a.notes||'')}" placeholder="Optional note">`+
