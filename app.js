@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.11';
+const APP_VERSION = '0.99.12';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -183,7 +183,7 @@ async function pushNormalizedState(){
       },categoryOrder:state.categoryOrder||{
       },monthLayouts:state.monthLayouts||{
       },accountNotes:Object.fromEntries((state.accounts||[]).map(a=>[a.id,a.notes||''])),transactionExtras:Object.fromEntries((state.transactions||[]).map(t=>[t.id,{
-        tag:t.tag||'',reconciled:!!t.reconciled,bankTransactionId:t.bankTransactionId||'',checkNumber:t.checkNumber||''
+        tag:t.tag||'',reconciled:!!t.reconciled,bankTransactionId:t.bankTransactionId||'',checkNumber:t.checkNumber||'',postedDate:t.postedDate||'',cardNumber:t.cardNumber||'',transferBankTransactionIds:t.transferBankTransactionIds||[]
       }])),wiped:!!state.wiped
     };
     const metadataWrite=await supabaseClient.from('budget_metadata').upsert({
@@ -341,14 +341,30 @@ function assignedTotal(m){
 }
 function categoryEnvelopeBalance(name,m=activeMonth){
   const assigned=Object.entries(state.assignments||{}).filter(([month])=>month<=m).reduce((total,[,monthly])=>total+Number(monthly?.[name]||0),0);
-  const spent=state.transactions.filter(transaction=>transaction.type==='expense'&&transaction.category===name&&monthIsOnOrBefore(transaction.date,m)).reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  const spent=categorySpentThrough(name,m);
   return Math.round((assigned+savedFor(name)-spent)*100)/100;
 }
 function envelopeTotal(m=activeMonth){
   return Object.keys(state.categories||{}).reduce((total,name)=>total+Math.max(0,categoryEnvelopeBalance(name,m)),0);
 }
+function categorySpentThrough(name,m=activeMonth){
+  const spent=state.transactions.filter(transaction=>transaction.type==='expense'&&transaction.category===name&&monthIsOnOrBefore(transaction.date,m)).reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  const refunds=state.transactions.filter(transaction=>transaction.type==='income'&&transaction.category===name&&state.accounts.find(account=>account.id===transaction.accountId)?.type==='credit'&&monthIsOnOrBefore(transaction.date,m)).reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  return Math.round((spent-refunds)*100)/100;
+}
+function creditCardPaymentReserve(accountId,m=activeMonth){
+  const card=state.accounts.find(account=>account.id===accountId);
+  if(card?.type!=='credit')return 0;
+  const purchases=state.transactions.filter(transaction=>transaction.type==='expense'&&transaction.accountId===accountId&&monthIsOnOrBefore(transaction.date,m)).reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  const credits=state.transactions.filter(transaction=>transaction.type==='income'&&transaction.accountId===accountId&&monthIsOnOrBefore(transaction.date,m)).reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  const payments=state.transactions.filter(transaction=>transaction.type==='transfer'&&transaction.toAccountId===accountId&&monthIsOnOrBefore(transaction.date,m)).reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  return Math.max(0,Math.round((purchases-credits-payments)*100)/100);
+}
+function totalCreditCardPaymentReserve(m=activeMonth){
+  return state.accounts.filter(account=>account.type==='credit').reduce((total,account)=>total+creditCardPaymentReserve(account.id,m),0);
+}
 function spentFor(name,m=activeMonth){
-  return monthTransactions(m).filter(t=>t.type==='expense'&&t.category===name).reduce((a,t)=>a+Number(t.amount),0);
+  return Math.round((monthTransactions(m).filter(t=>t.type==='expense'&&t.category===name).reduce((a,t)=>a+Number(t.amount),0)-monthTransactions(m).filter(t=>t.type==='income'&&t.category===name&&state.accounts.find(account=>account.id===t.accountId)?.type==='credit').reduce((a,t)=>a+Number(t.amount),0))*100)/100;
 }
 function savedFor(name){
   return Number(category(name)?.savings||0);
@@ -368,10 +384,81 @@ function planSuggestion(name,m=activeMonth){
    return spent;
 }
 function availableToAssign(m=activeMonth){
-  return Math.round((checkingCashBalance(m)-envelopeTotal(m))*100)/100;
+  return Math.round((checkingCashBalance(m)-envelopeTotal(m)-totalCreditCardPaymentReserve(m))*100)/100;
 }
 function overAssigned(m=activeMonth){
   return Math.max(0,Math.round(-availableToAssign(m)*100)/100);
+}
+function creditCardDebt(account){
+  return Math.max(0,Math.round(-Math.min(0,accountBalance(account))*100)/100);
+}
+function daysBetween(first,second){
+  const a=new Date(`${first}T12:00:00`),b=new Date(`${second}T12:00:00`);
+  return Number.isNaN(a.getTime())||Number.isNaN(b.getTime())?Infinity:Math.abs(Math.round((a-b)/86400000));
+}
+function isLikelyCardPayment(description,cardNames=[]){
+  const text=normalizeBankText(description);
+  return /payment|autopay|paydown|thank you|online pay|credit card/.test(text)||cardNames.some(name=>text.includes(normalizeBankText(name)));
+}
+function possibleTransferPairs(){
+  const checkingIds=new Set(state.accounts.filter(account=>account.type==='checking').map(account=>account.id));
+  const cards=state.accounts.filter(account=>account.type==='credit');
+  const cardNames=cards.map(account=>account.name);
+  const checkingPayments=state.transactions.filter(transaction=>transaction.type==='expense'&&checkingIds.has(transaction.accountId)&&isLikelyCardPayment(transaction.payee||transaction.memo,cardNames));
+  const cardCredits=state.transactions.filter(transaction=>transaction.type==='income'&&cards.some(account=>account.id===transaction.accountId)&&isLikelyCardPayment(transaction.payee||transaction.memo));
+  const used=new Set();
+  return cardCredits.flatMap(cardCredit=>{
+    const match=checkingPayments.find(payment=>!used.has(payment.id)&&Number(payment.amount)===Number(cardCredit.amount)&&daysBetween(payment.date,cardCredit.date)<=7);
+    if(!match)return [];
+    used.add(match.id);
+    return [{checking:match,card:cardCredit}];
+  });
+}
+function creditCardPaymentSummaryMarkup(){
+  const cards=state.accounts.filter(account=>account.type==='credit');
+  if(!cards.length)return '';
+  const pairs=possibleTransferPairs();
+  const rows=cards.map(card=>{
+    const owed=creditCardDebt(card),reserved=creditCardPaymentReserve(card.id),unreserved=Math.max(0,Math.round((owed-reserved)*100)/100);
+    return `<div class="credit-card-payment-row"><span><strong>${esc(card.name)}</strong><small>${money(owed)} owed</small></span><span><small>Reserved</small><strong>${money(reserved)}</strong></span><span class="${unreserved?'unreserved-debt':''}"><small>Unreserved</small><strong>${money(unreserved)}</strong></span></div>`;
+  }).join('');
+  return `<section class="credit-card-payment-summary" aria-labelledby="credit-card-payment-summary-title">`+
+`<div class="credit-card-payment-summary-heading"><div><h2 id="credit-card-payment-summary-title">Credit card payments</h2><p>Money reserved from category spending to pay card balances.</p></div><strong>${money(totalCreditCardPaymentReserve())}</strong></div>`+
+`<div class="credit-card-payment-rows">${rows}</div>`+
+(pairs.length?`<div class="transfer-review-notice"><span>${pairs.length} possible payment${pairs.length===1?'':'s'} found in existing transactions.</span><button type="button" class="secondary" id="review-card-transfers">Review payments</button></div>`:'')+
+`</section>`;
+}
+function convertPaymentPairToTransfer(pair){
+  const checking=state.transactions.find(transaction=>transaction.id===pair.checking.id),card=state.transactions.find(transaction=>transaction.id===pair.card.id);
+  if(!checking||!card)return;
+  checking.type='transfer';
+  checking.toAccountId=card.accountId;
+  checking.category='';
+  checking.cleared=!!(checking.cleared||card.cleared);
+  checking.reconciled=!!(checking.reconciled||card.reconciled);
+  checking.transferBankTransactionIds=[checking.bankTransactionId,card.bankTransactionId].filter(Boolean);
+  checking.memo=[checking.memo,`Card statement: ${card.payee||'Payment'}`].filter(Boolean).join(' | ');
+  state.transactions=state.transactions.filter(transaction=>transaction.id!==card.id);
+  save();
+  render();
+  void flushCloudSave();
+  appMessage('Payment converted to transfer','The checking payment and credit-card credit are now one transfer.','success');
+}
+function openTransferReview(){
+  const pairs=possibleTransferPairs();
+  if(!pairs.length){
+    appMessage('No payment pairs found','There are no likely checking-to-credit-card payment pairs to review.','warning');
+    return;
+  }
+  const m=modal('Review credit-card payments',`<p class="modal-intro">These transactions may represent the same payment. Review each pair before converting it to one transfer.</p>`+
+`<div class="transfer-review-list">${pairs.map((pair,index)=>`<article class="transfer-review-item"><p><strong>${esc(pair.checking.payee||'Checking payment')}</strong><br>${esc(pair.checking.date)} · ${money(pair.checking.amount)} from ${esc(state.accounts.find(account=>account.id===pair.checking.accountId)?.name||'Checking')}</p><p><strong>${esc(pair.card.payee||'Credit-card credit')}</strong><br>${esc(pair.card.date)} · ${money(pair.card.amount)} to ${esc(state.accounts.find(account=>account.id===pair.card.accountId)?.name||'Credit card')}</p><button type="button" class="primary" data-convert-transfer="${index}">Convert to transfer</button></article>`).join('')}</div>`+
+`<div class="modal-actions"><button type="button" class="secondary" data-close>Keep separate</button></div>`);
+  m.querySelector('[data-close]').onclick=closeModal;
+  m.querySelectorAll('[data-convert-transfer]').forEach(button=>button.onclick=()=>{
+    const pair=pairs[Number(button.dataset.convertTransfer)];
+    closeModal();
+    convertPaymentPairToTransfer(pair);
+  });
 }
 function previousMonth(m=activeMonth){
   const d=new Date(`${m}-01T12:00:00`);
@@ -524,6 +611,8 @@ function render(){
 `<strong>${money(over)}</strong>`+
 `<small>Reassign money from categories until this amount reaches $0.00.</small>`+
 `</article>`:'');
+  document.getElementById('available-summary').insertAdjacentHTML('beforeend',creditCardPaymentSummaryMarkup());
+  document.getElementById('review-card-transfers')?.addEventListener('click',openTransferReview);
   const planActions=document.getElementById('month-plan-actions');
   if(planActions){
     const future=activeMonth>monthKey(),explicit=hasExplicitPlan(activeMonth),suggested=hasSuggestedPlan(activeMonth),show=!explicit||suggested;
@@ -2256,6 +2345,9 @@ async function applyMetadataExtensions(){
       if(extra){
         transaction.tag=extra.tag||'';
         transaction.reconciled=!!extra.reconciled;
+        transaction.postedDate=extra.postedDate||transaction.postedDate||'';
+        transaction.cardNumber=extra.cardNumber||transaction.cardNumber||'';
+        transaction.transferBankTransactionIds=extra.transferBankTransactionIds||transaction.transferBankTransactionIds||[];
       }
     }
   }
@@ -2723,7 +2815,7 @@ pushNormalizedState=async function(){
     ...(data.transactionExtras||{
     }),...Object.fromEntries(state.transactions.map(t=>[t.id,{
       ...(data.transactionExtras?.[t.id]||{
-      }),tag:t.tag||'',reconciled:!!t.reconciled,splitGroupId:t.splitGroupId||'',splitIndex:t.splitIndex??null,splitCount:t.splitCount??null
+      }),tag:t.tag||'',reconciled:!!t.reconciled,splitGroupId:t.splitGroupId||'',splitIndex:t.splitIndex??null,splitCount:t.splitCount??null,postedDate:t.postedDate||'',cardNumber:t.cardNumber||'',transferBankTransactionIds:t.transferBankTransactionIds||[]
     }]))
   };
   const result=await supabaseClient.from('budget_metadata').upsert({
@@ -2745,6 +2837,7 @@ pullNormalizedState=async function(){
       t.splitGroupId=extra.splitGroupId;t.splitIndex=extra.splitIndex;t.splitCount=extra.splitCount;
     }
     if(extra?.bankTransactionId)t.bankTransactionId=extra.bankTransactionId;if(extra?.checkNumber)t.checkNumber=extra.checkNumber;
+    if(extra?.postedDate)t.postedDate=extra.postedDate;if(extra?.cardNumber)t.cardNumber=extra.cardNumber;if(extra?.transferBankTransactionIds)t.transferBankTransactionIds=extra.transferBankTransactionIds;
   });
 };
 const pullWithSplitRender=pullNormalizedState;
@@ -3096,7 +3189,7 @@ function parseBankTransactionCsv(text){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('Each bank transaction must have a Date in YYYY-MM-DD format.');
     if(!Number.isFinite(amount))throw new Error('Each bank transaction must have a numeric Amount.');
     parsed.push({
-      accountId:String(row[indexOf(['account id'])]||'').trim(),bankTransactionId:String(row[indexOf(['transaction id'])]||'').trim(),date,description,checkNumber:String(row[indexOf(['check number'])]||'').trim(),category:String(row[indexOf(['category'])]||'').trim(),tags:String(row[indexOf(['tags'])]||'').trim(),amount,balance:String(row[indexOf(['balance'])]||'').trim(),sourceFormat:creditCardFormat?'credit-card':'bank'
+      accountId:String(row[indexOf(['account id'])]||'').trim(),bankTransactionId:String(row[indexOf(['transaction id'])]||'').trim(),date,postedDate:normalizeBankDate(row[indexOf(['posted date'])]),cardNumber:String(row[indexOf(['card no.','card no'])]||'').trim(),description,checkNumber:String(row[indexOf(['check number'])]||'').trim(),category:String(row[indexOf(['category'])]||'').trim(),tags:String(row[indexOf(['tags'])]||'').trim(),amount,balance:String(row[indexOf(['balance'])]||'').trim(),sourceFormat:creditCardFormat?'credit-card':'bank'
     });
   }
   return parsed;
@@ -3114,8 +3207,9 @@ function ensureBankImportCategory(){
 }
 function bankTransactionFromRow(row,accountId){
   const amount=Math.round(Math.abs(Number(row.amount))*100)/100;
+  const account=state.accounts.find(item=>item.id===accountId),category=account?.type==='credit'&&Number(row.amount)>0&&state.categories[row.category]?row.category:'';
   return{
-    id:uid('tx'),type:Number(row.amount)<0?'expense':'income',date:row.date,amount,payee:row.description,memo:row.checkNumber?'Check #'+row.checkNumber:'',accountId,category:Number(row.amount)<0?ensureBankImportCategory():'',cleared:true,reconciled:false,bankTransactionId:row.bankTransactionId||'',checkNumber:row.checkNumber||''
+    id:uid('tx'),type:Number(row.amount)<0?'expense':'income',date:row.date,postedDate:row.postedDate||'',amount,payee:row.description,memo:row.checkNumber?'Check #'+row.checkNumber:'',accountId,category:Number(row.amount)<0?ensureBankImportCategory():category,cleared:true,reconciled:false,bankTransactionId:row.bankTransactionId||'',checkNumber:row.checkNumber||'',cardNumber:row.cardNumber||''
   };
 }
 function findMatchingBankTransaction(row,accountId){

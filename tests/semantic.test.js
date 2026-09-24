@@ -177,7 +177,15 @@ test('settings omits the removed Planning suggestions section', () => {
 });
 test('bank-imported expenses use a persisted uncategorized category', () => {
     assert.match(app, /function ensureBankImportCategory\(\)/);
-    assert.match(app, /category:Number\(row\.amount\)<0\?ensureBankImportCategory\(\):''/);
+    assert.match(app, /category:Number\(row\.amount\)<0\?ensureBankImportCategory\(\):category/);
+});
+test('credit card payment reserves are shown and reviewed without automatic conversion', () => {
+    assert.match(app, /function creditCardPaymentReserve\(accountId,m=activeMonth\)/);
+    assert.match(app, /function possibleTransferPairs\(\)/);
+    assert.match(app, /id="review-card-transfers"/);
+    assert.match(app, /Convert to transfer/);
+    assert.match(app, /function convertPaymentPairToTransfer\(pair\)/);
+    assert.match(css, /\.credit-card-payment-summary[\s\S]*\.unreserved-debt strong[\s\S]*color: var\(--red\)/);
 });
 test('account detail columns match the requested order and wrap payees', () => {
     assert.match(app, /<th>\s*<\/th><th>Date<\/th><th>Payee<\/th><th>Amount<\/th><th>Category<\/th><th>Status<\/th>/);
