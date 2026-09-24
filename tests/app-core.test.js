@@ -67,7 +67,7 @@ function loadApp() {
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
     moveGroup,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
-    acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,
+    acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
     getGroups:()=>GROUPS
@@ -176,6 +176,16 @@ test('available-to-assign includes income and opening funds, while remaining sub
   api.setState(state);
   assert.equal(api.availableToAssign('2026-09'), 300);
   assert.equal(api.categoryRemaining('Groceries', '2026-09'), 174.5);
+});
+
+test('account balance reflects an edited checking opening balance and transactions', () => {
+  const api = loadApp();
+  const state = preparedState(api);
+  state.accounts[0].openingBalance = 1250.50;
+  state.transactions.push({ id: 'income-2', type: 'income', date: '2026-09-03', amount: 300, category: '', accountId: state.accounts[0].id });
+  state.transactions.push({ id: 'expense-2', type: 'expense', date: '2026-09-04', amount: 75.25, category: 'Groceries', accountId: state.accounts[0].id });
+  api.setState(state);
+  assert.equal(api.accountBalance(api.getState().accounts[0]), 1475.25);
 });
 
 test('normalized persistence rows include accounts, categories, plans, transactions, and accepted months', () => {
