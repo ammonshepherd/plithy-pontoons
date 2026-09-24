@@ -238,9 +238,10 @@ test('bank CSV parsing and matching reconciles manual transactions without dupli
   state.accounts = [{ id: accountId, name: 'Checking', type: 'checking', openingBalance: 0 }];
   state.transactions = [{ id: 'manual-1', type: 'expense', date: '2026-09-20', amount: 45.67, payee: 'Grocery, Store', memo: '', accountId, category: 'Groceries', cleared: false }];
   api.setState(state);
-  const rows = api.parseBankTransactionCsv('Account ID,Transaction ID,Date,Description,Check Number,Category,Tags,Amount,Balance\nacct,bank-1,2026-09-20,"Grocery, Store",,,,-45.67,1000.00\nacct,bank-2,2026-09-21,Payroll,,,,"2,000.00",3000.00');
+  const rows = api.parseBankTransactionCsv('Account ID,Transaction ID,Date,Description,Check Number,Category,Tags,Amount,Balance\nacct,bank-1,09/20/26,"Grocery, Store",,,,"-$45.67","$1,000.00"\nacct,bank-2,09/21/26,Payroll,,,,"$2,000.00","$3,000.00"');
   assert.equal(rows.length, 2);
   assert.equal(rows[0].amount, -45.67);
+  assert.equal(rows[0].date, '2026-09-20');
   assert.equal(rows[0].description, 'Grocery, Store');
   const plan = api.bankImportPlan(accountId, rows);
   assert.equal(plan[0].match.id, 'manual-1');
