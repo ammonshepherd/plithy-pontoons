@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.0';
+const APP_VERSION = '0.99.1';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -2675,7 +2675,7 @@ splitBreakdownMarkup=function(items){
 };
 function transactionEditorMarkup(group){
   const first=group.items[0],isSplit=group.items.length>1,isIncome=first.type==='income',parts=group.items.map(item=>item),selected=parts[0]?.category||'',accounts=state.accounts||[],tag=first.tag||'';
-  return `<form id="transaction-edit-form" class="form-grid transaction-form">`+
+  return `<form id="transaction-edit-form" class="form-grid transaction-form" novalidate>`+
 `<label class="form-field full amount-field">`+
 `<span>Amount</span>`+
 `<input id="tx-amount" name="amount" type="number" min="0" step="0.01" inputmode="decimal" value="${Number(parts.reduce((sum,item)=>sum+Number(item.amount||0),0)).toFixed(2)}" required>`+
@@ -2710,7 +2710,7 @@ function transactionEditorMarkup(group){
 `<div id="split-rows">${(isSplit?parts:[{category:'',amount:0},{category:'',amount:0}]).map((part,index)=>`<div class="split-row"><div class="split-category">${transactionCategorySelectMarkup(`split-category-edit-${index}`,part.category||'','split-category',true)}</div><input class="split-amount" name="split-amount" type="number" min="0" step="0.01" inputmode="decimal" value="${isSplit?Number(part.amount||0).toFixed(2):''}" placeholder="$0.00"><button type="button" class="text-button remove-split" title="Remove split" aria-label="Remove split">×</button></div>`).join('')}</div>`+
 `<button type="button" class="secondary add-split" id="add-split">+ Add split</button>`+
 `</fieldset>`+
-`<label class="form-field full">Date<input id="tx-date" name="date" type="date" value="${esc(first.date||'')}" required>`+
+`<label class="form-field full">Date<input id="tx-date" name="date" type="date" value="${esc(normalizeBankDate(first.date||''))}" required>`+
 `</label>`+
 `<label class="form-field full">Payee / description<input id="tx-payee" name="payee" value="${esc(first.payee||'')}" placeholder="e.g. Grocery store">`+
 `</label>`+
@@ -2813,7 +2813,12 @@ function openTransactionEditor(id,afterSave=()=>render()){
   };
   const saveEditedTransaction=event=>{
     event?.preventDefault();
-    if(!form.reportValidity())return;
+    if(!form.elements.date.value){
+      appMessage('Transaction cannot be saved','Choose a transaction date.','warning');return;
+    }
+    if(!form.elements.account.value){
+      appMessage('Transaction cannot be saved','Choose an account.','warning');return;
+    }
     const type=form.elements['transaction-type'].value,amount=Number(form.elements.amount.value),split=splitToggle.checked&&type==='expense',parts=type==='income'?[{
       category:'',amount
     }]:split?[...rows.querySelectorAll('.split-row')].map(row=>({

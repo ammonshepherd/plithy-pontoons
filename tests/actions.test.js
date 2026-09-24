@@ -62,3 +62,22 @@ test('transaction add and edit modals use native form submission', () => {
     assert.doesNotMatch(app, /m\.querySelector\('#save-tx'\)\.onclick/);
     assert.doesNotMatch(app, /requestSubmit/);
 });
+
+test('clicking an edit Save transaction submit button changes the transaction', () => {
+    const transaction = { payee: 'Original payee' };
+    const form = new EventTarget();
+    const saveButton = {
+        type: 'submit',
+        click() {
+            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+    };
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        transaction.payee = 'Updated payee';
+    });
+
+    saveButton.click();
+
+    assert.equal(transaction.payee, 'Updated payee');
+});
