@@ -106,10 +106,10 @@ test('transaction editing uses the add-transaction form and supports deletion', 
 
 
 test('account deletion preserves transactions and removes their account links', () => {
-  assert.match(app, /function deleteAccount\\(id\\)/);
-  assert.match(app, /state\\.accounts=state\\.accounts\\.filter\\(item=>item\\.id!==id\\)/);
-  assert.match(app, /if\\(transaction\\.accountId===id\\)transaction\\.accountId=''/);
-  assert.match(app, /if\\(transaction\\.toAccountId===id\\)transaction\\.toAccountId=''/);
+  assert.match(app, /function deleteAccount\(id\)/);
+  assert.match(app, /state\.accounts=state\.accounts\.filter\(item=>item\.id!==id\)/);
+  assert.match(app, /if\(transaction\.accountId===id\)transaction\.accountId=''/);
+  assert.match(app, /if\(transaction\.toAccountId===id\)transaction\.toAccountId=''/);
   assert.match(app, /id="delete-account-edit"/);
   assert.match(app, /id="confirm-delete-account"/);
 });
@@ -162,4 +162,14 @@ test('monthly plan actions can copy previous actual spending', () => {
   assert.match(app, /function copyPreviousMonthSpending\(\)/);
   assert.match(app, /spentFor\(c\.name,prior\)/);
   assert.match(app, /month-copy-spending/);
+});
+
+test('account detail exposes safe bank CSV import controls and matching behavior', () => {
+  assert.match(app, /id="account-detail-import">Import bank CSV<\/button>/);
+  assert.match(app, /id="account-bank-csv" type="file" accept="\.csv,text\/csv"/);
+  assert.match(app, /function parseBankTransactionCsv\(text\)/);
+  assert.match(app, /function bankImportPlan\(accountId,rows\)/);
+  assert.match(app, /Import unmatched only/);
+  assert.match(app, /Import all as new/);
+  assert.match(app, /transaction\.reconciled=true/);
 });
