@@ -110,6 +110,9 @@ test('account detail edits save and survive refresh', () => {
     assert.match(app, /<form id="account-edit-form" class="form-grid">/);
     assert.match(app, /account-edit-form'\)\.addEventListener\('submit'/);
     assert.match(app, /const detailIsOpen=activeAccountDetailId===id;[\s\S]*if\(detailIsOpen\)renderAccountDetail\(id\);else render\(\)/);
+    assert.match(app, /function clearActiveAccountDetail\(\)[\s\S]*localStorage\.removeItem\(ACCOUNT_DETAIL_STORAGE_KEY\)/);
+    assert.match(app, /account-detail-back'\)\.onclick=\(\)=>\{\s*clearActiveAccountDetail\(\);\s*renderAccounts\(\);/);
+    assert.doesNotMatch(app, /account-detail-back'\)\.onclick=\(\)=>\{\s*activeAccountDetailId=null;\s*renderAccounts\(\);/);
 });
 
 test('settings exposes actions for moving groups', () => {

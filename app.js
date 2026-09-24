@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.6';
+const APP_VERSION = '0.99.7';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -1325,6 +1325,15 @@ function openReconcile(id){
   };
 }
 let activeAccountDetailId=null;
+function clearActiveAccountDetail(){
+  activeAccountDetailId=null;
+  try{
+    localStorage.removeItem(ACCOUNT_DETAIL_STORAGE_KEY);
+  }
+  catch(error){
+    console.warn('Could not forget active account:',error.message);
+  }
+}
 function renderAccountDetail(id){
   const a=state.accounts.find(x=>x.id===id);
   if(!a){
@@ -1359,7 +1368,7 @@ function renderAccountDetail(id){
 `<button class="primary" id="reconcile-selected" ${rows.length?'':'disabled'} title="Reconcile selected">🔒 Reconcile selected</button>`+
 `</div>`;
   root.querySelector('#account-detail-back').onclick=()=>{
-    activeAccountDetailId=null;
+    clearActiveAccountDetail();
     renderAccounts();
   };
   root.querySelector('#account-detail-edit').onclick=()=>openAccountEditor(id);
@@ -2648,7 +2657,7 @@ renderAccountDetail=function(id){
 `<button class="primary" id="reconcile-selected" ${groups.length?'':'disabled'} title="Reconcile selected">🔒 Reconcile selected</button>`+
 `</div>`;
   root.querySelector('#account-detail-back').onclick=()=>{
-    activeAccountDetailId=null;
+    clearActiveAccountDetail();
     renderAccounts();
   };
   root.querySelector('#account-detail-edit').onclick=()=>openAccountEditor(id);
@@ -2986,7 +2995,7 @@ renderAccountDetail=function(id){
 `<button class="primary" id="reconcile-selected" ${groups.length?'':'disabled'} title="Reconcile selected">🔒 Reconcile selected</button>`+
 `</div>`;
   root.querySelector('#account-detail-back').onclick=()=>{
-    activeAccountDetailId=null;
+    clearActiveAccountDetail();
     renderAccounts();
   };
   root.querySelector('#account-detail-edit').onclick=()=>openAccountEditor(id);
