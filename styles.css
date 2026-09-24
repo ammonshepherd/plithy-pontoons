@@ -164,6 +164,8 @@ tr:last-child td { border-bottom: 0; }
 .account-transaction-list { border: 1px solid var(--line); border-radius: 9px; }
 .table-wrap table, .account-transaction-list table { min-width: 560px; table-layout: fixed; }
 .account-transaction-list th, .account-transaction-list td { padding: 7px 6px; font-size: 11px; }
+.account-transaction-list th:nth-child(3), .account-transaction-list td:nth-child(3) { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+.account-transaction-list th:nth-child(4), .account-transaction-list td:nth-child(4) { text-align: right; }
 .account-transaction-list th:first-child, .account-transaction-list td:first-child { width: 34px; text-align: center; }
 .account-transaction-list th:last-child, .account-transaction-list td:last-child { width: 60px; text-align: center; }
 .lock-toggle { padding: 2px; border: 0; background: transparent; font-size: 16px; line-height: 1; filter: grayscale(1); opacity: .55; }
