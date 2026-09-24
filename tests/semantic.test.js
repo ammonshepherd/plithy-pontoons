@@ -187,3 +187,8 @@ test('bank CSV review uses the app modal helper', () => {
   assert.match(app, /function openBankImportReview\(accountId,rows\)[\s\S]*modal\('Review bank import'/);
   assert.doesNotMatch(app, /openModal/);
 });
+
+test('settings omits the removed Planning suggestions section', () => {
+  assert.doesNotMatch(html, /<h2>Planning suggestions<\/h2>/);
+  assert.doesNotMatch(html, /New monthly plans use the previous month's actual spending/);
+});
