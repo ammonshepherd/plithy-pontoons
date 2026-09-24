@@ -91,3 +91,11 @@ test('available card uses green money styling', () => {
     assert.match(fs.readFileSync(path.join(root, 'styles.css'), 'utf8'), /\.available-card\s*\{[\s\S]*background:[\s\S]*var\(--success\)/);
     assert.match(fs.readFileSync(path.join(root, 'styles.css'), 'utf8'), /\.available-card strong\s*\{[\s\S]*color:\s*var\(--success\)/);
 });
+
+test('settings exposes actions for moving groups', () => {
+    assert.match(app, /function moveGroupRelative\(groupName,direction\)/);
+    assert.match(app, /data-move-group-up/);
+    assert.match(app, /data-move-group-down/);
+    assert.match(app, /moveGroupRelative\(b\.dataset\.moveGroupUp,-1\)/);
+    assert.match(app, /moveGroupRelative\(b\.dataset\.moveGroupDown,1\)/);
+});

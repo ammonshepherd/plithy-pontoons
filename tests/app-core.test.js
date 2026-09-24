@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -204,6 +204,19 @@ test('groups can be reordered and state tracks the new order', () => {
   });
     api.moveGroup('Other Stuff', 'Weekly Basics');
     assert.equal(api.monthGroups('2026-09')[0][0], 'Other Stuff');
+});
+test('group move controls reorder the active month layout and persist it', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-09');
+    api.setState(state);
+    api.replaceSideEffects(() => {
+    }, () => {
+    }, () => {
+    });
+    api.moveGroupRelative('Weekly Basics', 1);
+    assert.equal(api.monthGroups('2026-09')[1][0], 'Weekly Basics');
+    assert.equal(api.getState().monthLayouts['2026-09'].groups[1][0], 'Weekly Basics');
 });
 test('planned amounts, suggestions, and plan approval work by month', () => {
     const api = loadApp();
@@ -337,4 +350,3 @@ test('bank CSV parsing and matching reconciles manual transactions without dupli
     assert.equal(imported.amount, 2000);
     assert.equal(imported.accountId, accountId);
 });
-

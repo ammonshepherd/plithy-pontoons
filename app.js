@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.2';
+const APP_VERSION = '0.99.3';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -2023,15 +2023,27 @@ moveGroup=function(groupName,beforeName=''){
   save();
   render();
 };
+function moveGroupRelative(groupName,direction){
+  const groups=monthGroups(activeMonth);
+  const index=groups.findIndex(([name])=>name===groupName);
+  const target=index+direction;
+  if(index<0||target<0||target>=groups.length)return;
+  [groups[index],groups[target]]=[groups[target],groups[index]];
+  save();
+  render();
+}
 renderSettings=function(){
   const root=document.getElementById('settings-categories');
   root.innerHTML=monthGroups(activeMonth).map(([group,names])=>`<div class="settings-category-group" draggable="true" data-settings-group-drag data-settings-group="${esc(group)}">`+
 `<div class="settings-group-heading">`+
 `<span class="settings-group-handle" data-settings-group-handle title="Drag to reorder group">⋮⋮</span>`+
 `<button type="button" class="group-setting-name" data-edit-group="${esc(group)}">${esc(group)}</button>`+
+`<span class="settings-group-actions"><button type="button" class="group-move" data-move-group-up="${esc(group)}" aria-label="Move ${esc(group)} up" title="Move group up">↑</button><button type="button" class="group-move" data-move-group-down="${esc(group)}" aria-label="Move ${esc(group)} down" title="Move group down">↓</button></span>`+
 `</div>${names.filter(name=>category(name)).map(name=>{const c=category(name);return `<div class="setting-row category-setting-row" draggable="true" data-settings-drag data-category="${esc(name)}" data-group="${esc(group)}"><span class="settings-drag-handle" data-settings-drag-handle title="Drag to reorder or move category">⋮⋮</span><div><button type="button" class="category-setting-name" data-edit-category="${esc(c.name)}">${esc(c.name)}</button>${c.note?`<small>${esc(c.note)}</small>`:''}</div></div>`}).join('')}</div>`).join('');
   root.querySelectorAll('[data-edit-category]').forEach(b=>b.onclick=()=>openCategoryModal(b.dataset.editCategory));
   root.querySelectorAll('[data-edit-group]').forEach(b=>b.onclick=()=>openGroupModal(b.dataset.editGroup));
+  root.querySelectorAll('[data-move-group-up]').forEach(b=>b.onclick=()=>moveGroupRelative(b.dataset.moveGroupUp,-1));
+  root.querySelectorAll('[data-move-group-down]').forEach(b=>b.onclick=()=>moveGroupRelative(b.dataset.moveGroupDown,1));
   setupSettingsCategoryDrag(root);
   setupGroupDrag(root);
   renderTags();
