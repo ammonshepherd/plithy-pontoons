@@ -173,3 +173,12 @@ test('account detail exposes safe bank CSV import controls and matching behavior
   assert.match(app, /Import all as new/);
   assert.match(app, /transaction\.reconciled=true/);
 });
+
+test('budget reset has one accurate destructive control', () => {
+  assert.doesNotMatch(html, /id="reset-demo"/);
+  assert.match(html, /<h2>Reset budget<\/h2>/);
+  assert.match(html, /id="wipe-budget">Wipe budget and start fresh<\/button>/);
+  assert.match(html, /Permanently deletes this local budget/);
+  assert.match(app, /document\.getElementById\('wipe-budget'\)\.onclick=wipeBudget/);
+  assert.doesNotMatch(app, /reset-demo/);
+});
