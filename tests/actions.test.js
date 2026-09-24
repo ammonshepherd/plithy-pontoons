@@ -102,6 +102,13 @@ test('over-assigned warning has a red card and reassign guidance', () => {
     assert.match(css, /\.over-assigned-card strong\s*\{[\s\S]*font-size:\s*30px[\s\S]*color:\s*var\(--red\)/);
 });
 
+test('account detail edits save and survive refresh', () => {
+    assert.match(app, /const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account'/);
+    assert.match(app, /openAccountTransactions=function\(id\)[\s\S]*localStorage\.setItem\(ACCOUNT_DETAIL_STORAGE_KEY,id\)/);
+    assert.match(app, /const detailIsOpen=activeAccountDetailId===id;[\s\S]*if\(detailIsOpen\)renderAccountDetail\(id\);else render\(\)/);
+    assert.match(app, /rememberedView\(\)==='accounts-view'[\s\S]*localStorage\.getItem\(ACCOUNT_DETAIL_STORAGE_KEY\)/);
+});
+
 test('settings exposes actions for moving groups', () => {
     assert.match(app, /function moveGroupRelative\(groupName,direction\)/);
     assert.match(app, /data-move-group-up/);
