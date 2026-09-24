@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.1';
+const APP_VERSION = '0.99.2';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const STORAGE_KEY = 'harbor-budget-state-v1';
 const supabaseClient = window.supabase?.createClient(window.BUDGETEER_SUPABASE.url, window.BUDGETEER_SUPABASE.publishableKey);
@@ -2436,6 +2436,7 @@ beginInlineAssignment=function(button,name){
       return;
     }
     void flushCloudSave();
+    render();
     const assignedButton=document.createElement('button');
     assignedButton.type='button';
     assignedButton.className='assigned-link';
@@ -3175,6 +3176,7 @@ beginInlineAssignment=function(button,name){
       return;
     }
     void flushCloudSave();
+    render();
     const assignedButton=document.createElement('button');
     assignedButton.type='button';
     assignedButton.className='assigned-link';

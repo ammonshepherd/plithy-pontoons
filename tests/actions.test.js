@@ -81,3 +81,13 @@ test('clicking an edit Save transaction submit button changes the transaction', 
 
     assert.equal(transaction.payee, 'Updated payee');
 });
+
+test('saving an Assigned edit rerenders the Available to assign summary', () => {
+    assert.match(app, /beginInlineAssignment=function\(button,name\)[\s\S]*void flushCloudSave\(\);\s*render\(\);/);
+    assert.match(html, /id="available-summary"/);
+});
+
+test('available card uses green money styling', () => {
+    assert.match(fs.readFileSync(path.join(root, 'styles.css'), 'utf8'), /\.available-card\s*\{[\s\S]*background:[\s\S]*var\(--success\)/);
+    assert.match(fs.readFileSync(path.join(root, 'styles.css'), 'utf8'), /\.available-card strong\s*\{[\s\S]*color:\s*var\(--success\)/);
+});
