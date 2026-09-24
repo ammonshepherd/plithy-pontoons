@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.8';
+const APP_VERSION = '0.99.9';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -307,6 +307,29 @@ function assignments(m=activeMonth){
   return state.assignments[m]||{
   };
 }
+function monthIsOnOrBefore(value,m){
+  return /^\d{4}-\d{2}/.test(value||'')&&value.slice(0,7)<=m;
+}
+function cashAccountIds(){
+  return new Set((state.accounts||[]).filter(account=>account.type==='checking').map(account=>account.id));
+}
+function checkingCashBalance(m=activeMonth){
+  const cashIds=cashAccountIds();
+  const accountOpeningFunds=(state.accounts||[]).filter(account=>cashIds.has(account.id)).reduce((total,account)=>total+Number(account.openingBalance||0),0);
+  const openingFunds=state.openingFundsMonth&&state.openingFundsMonth<=m?accountOpeningFunds||Number(state.openingFunds||0):0;
+  const transactions=state.transactions.filter(transaction=>monthIsOnOrBefore(transaction.date,m));
+  const total=transactions.reduce((balance,transaction)=>{
+    if(transaction.type==='income'&&cashIds.has(transaction.accountId))return balance+Number(transaction.amount||0);
+    if(transaction.type==='expense'&&cashIds.has(transaction.accountId))return balance-Number(transaction.amount||0);
+    if(transaction.type==='transfer'){
+      const outgoing=cashIds.has(transaction.accountId)?-Number(transaction.amount||0):0;
+      const incoming=cashIds.has(transaction.toAccountId)?Number(transaction.amount||0):0;
+      return balance+outgoing+incoming;
+    }
+    return balance;
+  },openingFunds);
+  return Math.round(total*100)/100;
+}
 function incomeTotal(m){
   return monthTransactions(m).filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0);
 }
@@ -315,6 +338,14 @@ function expenseTotal(m){
 }
 function assignedTotal(m){
   return Object.values(assignments(m)).reduce((a,v)=>a+Number(v||0),0);
+}
+function categoryEnvelopeBalance(name,m=activeMonth){
+  const assigned=Object.entries(state.assignments||{}).filter(([month])=>month<=m).reduce((total,[,monthly])=>total+Number(monthly?.[name]||0),0);
+  const spent=state.transactions.filter(transaction=>transaction.type==='expense'&&transaction.category===name&&monthIsOnOrBefore(transaction.date,m)).reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  return Math.round((assigned+savedFor(name)-spent)*100)/100;
+}
+function envelopeTotal(m=activeMonth){
+  return Object.keys(state.categories||{}).reduce((total,name)=>total+Math.max(0,categoryEnvelopeBalance(name,m)),0);
 }
 function spentFor(name,m=activeMonth){
   return monthTransactions(m).filter(t=>t.type==='expense'&&t.category===name).reduce((a,t)=>a+Number(t.amount),0);
@@ -337,9 +368,7 @@ function planSuggestion(name,m=activeMonth){
    return spent;
 }
 function availableToAssign(m=activeMonth){
-  const accountOpeningFunds=(state.accounts||[]).filter(account=>account.type!=='credit').reduce((total,account)=>total+Math.max(0,Number(account.openingBalance||0)),0);
-  const openingFunds=m===state.openingFundsMonth?(accountOpeningFunds>0?accountOpeningFunds:Number(state.openingFunds||0)):0;
-  return Math.round((incomeTotal(m)+openingFunds-assignedTotal(m))*100)/100;
+  return Math.round((checkingCashBalance(m)-envelopeTotal(m))*100)/100;
 }
 function overAssigned(m=activeMonth){
   return Math.max(0,Math.round(-availableToAssign(m)*100)/100);

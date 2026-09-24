@@ -115,6 +115,14 @@ test('account detail edits save and survive refresh', () => {
     assert.doesNotMatch(app, /account-detail-back'\)\.onclick=\(\)=>\{\s*activeAccountDetailId=null;\s*renderAccounts\(\);/);
 });
 
+test('available-to-assign uses cumulative cash and carried-forward envelopes', () => {
+    assert.match(app, /function checkingCashBalance\(m=activeMonth\)/);
+    assert.match(app, /function categoryEnvelopeBalance\(name,m=activeMonth\)/);
+    assert.match(app, /function envelopeTotal\(m=activeMonth\)/);
+    assert.match(app, /checkingCashBalance\(m\)-envelopeTotal\(m\)/);
+    assert.match(app, /transaction\.type==='transfer'/);
+});
+
 test('settings exposes actions for moving groups', () => {
     assert.match(app, /function moveGroupRelative\(groupName,direction\)/);
     assert.match(app, /data-move-group-up/);
