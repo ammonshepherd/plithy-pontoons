@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.14';
+const APP_VERSION = '0.99.15';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
