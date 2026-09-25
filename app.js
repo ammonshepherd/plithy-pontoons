@@ -1159,21 +1159,22 @@ function importCsvFile(event){
   };
   reader.readAsText(file);
 }
+const CLOUD_WIPE_TABLES = ['category_transfers','category_month_layouts','category_monthly','category_savings','transactions','reconciliations','categories','accounts','budget_months','budget_snapshots'];
+function isMissingCloudTableError(error){
+  const code=error?.code||'';
+  const message=String(error?.message||'');
+  return code==='42P01'||code==='PGRST205'||/relation .* does not exist|could not find the table/i.test(message);
+}
 async function clearCloudBudget(){
   const householdId=await getHouseholdId();
   if(!householdId)return 0;
-  for(const table of ['category_transfers','category_month_layouts','category_monthly','category_savings','transactions','reconciliations','categories','accounts','budget_months','budget_snapshots']){
-    const {
-      error
-    }
-    =await supabaseClient.from(table).delete().eq('household_id',householdId);
-    if(error)throw error;
+  for(const table of CLOUD_WIPE_TABLES){
+    const {error}=await supabaseClient.from(table).delete().eq('household_id',householdId);
+    if(error&&!isMissingCloudTableError(error))throw error;
   }
   const metadata={
-    groups:[],tags:[],openingFunds:0,openingFundsMonth:'',planMonths:{
-    },categoryOrder:{
-    },monthLayouts:{
-    },wiped:true
+    groups:[],tags:[],openingFunds:0,openingFundsMonth:'',planMonths:{},
+    categoryOrder:{},monthLayouts:{},wiped:true
   };
   const result=await supabaseClient.from('budget_metadata').upsert({
     household_id:householdId,data:metadata,updated_at:new Date().toISOString()
@@ -1181,7 +1182,7 @@ async function clearCloudBudget(){
   if(result.error)throw result.error;
   return 0;
 }
-async function wipeBudget(){
+function wipeBudget(){
   if(!confirm('Wipe this budget and start fresh? This removes all categories, accounts, transactions, plans, savings, and cloud data.'))return;
   if(!confirm('This cannot be undone unless you have a backup. Continue?'))return;
   clearTimeout(syncTimer);
@@ -1195,7 +1196,8 @@ async function wipeBudget(){
     if(state.wipeRequested&&navigator.onLine){
       state.syncRevision=await clearCloudBudget();
       state.wipeRequested=false;
-      save();
+      localChangesPending=false;
+      clearTimeout(syncTimer);
     }
     appMessage('Budget wiped','The app is now completely empty.','success');
   }

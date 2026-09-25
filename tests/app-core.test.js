@@ -85,7 +85,7 @@ function loadApp() {
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
     moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,paymentMatchScore,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
-    acceptCurrentPlan,copyPreviousMonthPlan,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
+    acceptCurrentPlan,copyPreviousMonthPlan,isMissingCloudTableError,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
     getGroups:()=>GROUPS
@@ -515,4 +515,12 @@ test('payment matching scores exact amounts, dates, and payee evidence', () => {
       { amount: 100, date: '2026-09-28', payee: 'Payment' },
       ['Visa']
     ), null);
+});
+
+test('cloud wipe treats missing legacy tables as already clean', () => {
+    const api = loadApp();
+    assert.equal(api.isMissingCloudTableError({ code: '42P01', message: 'relation "category_transfers" does not exist' }), true);
+    assert.equal(api.isMissingCloudTableError({ code: 'PGRST205', message: "Could not find the table 'public.reconciliations' in the schema cache" }), true);
+    assert.equal(api.isMissingCloudTableError({ code: '42501', message: 'new row violates row-level security policy' }), false);
+    assert.equal(api.isMissingCloudTableError({ code: '23503', message: 'foreign key violation' }), false);
 });
