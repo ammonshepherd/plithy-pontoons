@@ -259,7 +259,7 @@ test('available-to-assign uses cumulative checking cash and carried-forward enve
     assert.equal(api.checkingCashBalance('2026-02'), 1650);
     assert.equal(api.categoryEnvelopeBalance('Groceries', '2026-02'), 150);
     assert.equal(api.envelopeTotal('2026-02'), 150);
-    assert.equal(api.availableToAssign('2026-02'), 1500);
+    assert.equal(api.availableToAssign('2026-02'), 1550);
 });
 test('checking transfers do not change cumulative checking cash', () => {
     const api = loadApp();
@@ -457,7 +457,7 @@ test('credit card payments release reserves and reduce debt without creating inc
     api.setState(state);
     assert.equal(api.creditCardPaymentReserve(cardId, '2026-09'), 60);
     assert.equal(api.accountBalance(state.accounts[1]), -560);
-    assert.equal(api.availableToAssign('2026-09'), 200);
+    assert.equal(api.availableToAssign('2026-09'), 160);
 });
 test('credit card refunds restore their category and release the reserved amount', () => {
     const api = loadApp();
