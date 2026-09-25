@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.15';
+const APP_VERSION = '0.99.16';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -384,7 +384,9 @@ function planSuggestion(name,m=activeMonth){
    return spent;
 }
 function availableToAssign(m=activeMonth){
-  return Math.round((checkingCashBalance(m)-envelopeTotal(m)-totalCreditCardPaymentReserve(m))*100)/100;
+  // Available means current checking cash that has not been assigned this month.
+  // Spending changes category Remaining, not the amount available to assign.
+  return Math.round((checkingCashBalance(m)-assignedTotal(m))*100)/100;
 }
 function overAssigned(m=activeMonth){
   return Math.max(0,Math.round(-availableToAssign(m)*100)/100);

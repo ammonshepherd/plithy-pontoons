@@ -259,7 +259,7 @@ test('available-to-assign uses cumulative checking cash and carried-forward enve
     assert.equal(api.checkingCashBalance('2026-02'), 1650);
     assert.equal(api.categoryEnvelopeBalance('Groceries', '2026-02'), 150);
     assert.equal(api.envelopeTotal('2026-02'), 150);
-    assert.equal(api.availableToAssign('2026-02'), 1500);
+    assert.equal(api.availableToAssign('2026-02'), 1550);
 });
 test('checking transfers do not change cumulative checking cash', () => {
     const api = loadApp();
@@ -295,7 +295,7 @@ test('planned amounts, suggestions, and plan approval work by month', () => {
     api.copyPreviousMonthPlan();
     assert.equal(api.getState().categories.Groceries.plans['2026-10'], 63.21);
 });
-test('available-to-assign includes income and opening funds, while remaining subtracts spending', () => {
+test('available-to-assign uses current cash less assignments, while remaining subtracts spending', () => {
     const api = loadApp();
     const state = preparedState(api);
     state.openingFunds = 100;
@@ -307,7 +307,7 @@ test('available-to-assign includes income and opening funds, while remaining sub
      id: 'expense-1', type: 'expense', date: '2026-09-02', amount: 25.5, category: 'Groceries', accountId: state.accounts[0].id
   });
     api.setState(state);
-    assert.equal(api.availableToAssign('2026-09'), 300);
+    assert.equal(api.availableToAssign('2026-09'), 274.5);
     assert.equal(api.categoryRemaining('Groceries', '2026-09'), 174.5);
 });
 test('available-to-assign uses account opening balances once instead of stale aggregate opening funds', () => {
@@ -457,7 +457,7 @@ test('credit card payments release reserves and reduce debt without creating inc
     api.setState(state);
     assert.equal(api.creditCardPaymentReserve(cardId, '2026-09'), 60);
     assert.equal(api.accountBalance(state.accounts[1]), -560);
-    assert.equal(api.availableToAssign('2026-09'), 200);
+    assert.equal(api.availableToAssign('2026-09'), 160);
 });
 test('credit card refunds restore their category and release the reserved amount', () => {
     const api = loadApp();
@@ -523,4 +523,26 @@ test('cloud wipe treats missing legacy tables as already clean', () => {
     assert.equal(api.isMissingCloudTableError({ code: 'PGRST205', message: "Could not find the table 'public.reconciliations' in the schema cache" }), true);
     assert.equal(api.isMissingCloudTableError({ code: '42501', message: 'new row violates row-level security policy' }), false);
     assert.equal(api.isMissingCloudTableError({ code: '23503', message: 'foreign key violation' }), false);
+});
+
+test('categorized spending and excess credit-card payments do not release assigned money', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-09');
+    const checkingId = '88888888-8888-4888-8888-888888888888';
+    const cardId = '99999999-9999-4999-8999-999999999999';
+    state.openingFundsMonth = '2026-09';
+    state.accounts = [
+      { id: checkingId, name: 'Checking', type: 'checking', openingBalance: 500 },
+      { id: cardId, name: 'Card', type: 'credit', openingBalance: -100 }
+    ];
+    state.transactions = [
+      { id: 'card-purchase', type: 'expense', date: '2026-09-01', amount: 50, category: 'Groceries', accountId: cardId },
+      { id: 'card-payment', type: 'transfer', date: '2026-09-02', amount: 150, accountId: checkingId, toAccountId: cardId }
+    ];
+    state.assignments['2026-09'] = { Groceries: 350 };
+    api.setState(state);
+    assert.equal(api.checkingCashBalance('2026-09'), 350);
+    assert.equal(api.availableToAssign('2026-09'), 0);
+    assert.equal(api.categoryRemaining('Groceries', '2026-09'), 300);
 });
