@@ -1182,7 +1182,7 @@ async function clearCloudBudget(){
   if(result.error)throw result.error;
   return 0;
 }
-function wipeBudget(){
+async function wipeBudget(){
   if(!confirm('Wipe this budget and start fresh? This removes all categories, accounts, transactions, plans, savings, and cloud data.'))return;
   if(!confirm('This cannot be undone unless you have a backup. Continue?'))return;
   clearTimeout(syncTimer);
