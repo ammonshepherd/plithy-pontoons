@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.16';
+const APP_VERSION = '0.99.17';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -2464,6 +2464,7 @@ function openTransaction(){
 `</span>`+
 `</label>
     <label id="tx-single-category" class="form-field full">Category${transactionCategorySelectMarkup('tx-category',selected,'category')}</label>
+    <div id="tx-income-category" class="form-field full income-category" hidden>Category <strong>Income</strong></div>
     <fieldset id="tx-splits" class="form-field full" hidden>`+
 `<legend>Split categories</legend>`+
 `<p class="split-help">Choose a category and amount for each part.</p>`+
@@ -2497,7 +2498,7 @@ function openTransaction(){
 `<button type="submit" class="primary" id="save-tx">Save transaction</button>`+
 `</div>
   </form>`);
-    const form=m.querySelector('#transaction-form'),rows=m.querySelector('#split-rows'),single=m.querySelector('#tx-single-category'),splitBox=m.querySelector('#tx-splits'),splitToggle=m.querySelector('#tx-split'),splitIndicator=m.querySelector('#split-remaining');
+    const form=m.querySelector('#transaction-form'),rows=m.querySelector('#split-rows'),single=m.querySelector('#tx-single-category'),incomeCategory=m.querySelector('#tx-income-category'),splitBox=m.querySelector('#tx-splits'),splitToggle=m.querySelector('#tx-split'),splitIndicator=m.querySelector('#split-remaining');
     const updateSplitRemaining=()=>{
     const total=Math.round(Number(m.querySelector('#tx-amount').value||0)*100),used=[...rows.querySelectorAll('.split-amount')].reduce((sum,input)=>sum+Math.round(Number(input.value||0)*100),0),remaining=(total-used)/100;
     splitIndicator.classList.toggle('over',remaining<0);
@@ -2517,7 +2518,8 @@ function openTransaction(){
     const setSplit=enabled=>{
     splitToggle.checked=enabled;
     splitBox.hidden=!enabled;
-    single.hidden=enabled;
+    const expense=form.elements['transaction-type'].value==='expense';
+    single.hidden=enabled||!expense;
     updateSplitRemaining();
   };
     addRow();
@@ -2525,7 +2527,10 @@ function openTransaction(){
   m.querySelector('#tx-amount').addEventListener('input',updateSplitRemaining);
   splitToggle.addEventListener('change',()=>setSplit(splitToggle.checked));
     form.querySelectorAll('input[name="transaction-type"]').forEach(input=>input.addEventListener('change',()=>{
-    const expense=input.value==='expense'&&input.checked;m.querySelector('.split-toggle-control').hidden=!expense;if(!expense)setSplit(false);
+    const expense=input.value==='expense'&&input.checked,income=input.value==='income'&&input.checked;
+    m.querySelector('.split-toggle-control').hidden=!expense;
+    incomeCategory.hidden=!income;
+    setSplit(expense&&splitToggle.checked);
   }));
     m.querySelector('#add-split').addEventListener('click',addRow);
   m.addEventListener('click',e=>{
@@ -2904,7 +2909,8 @@ function transactionEditorMarkup(group){
 `<span>On</span>`+
 `</span>`+
 `</label>`+
-`<label id="tx-single-category" class="form-field full" ${isSplit||isIncome?'hidden':''}>Category${transactionCategorySelectMarkup('tx-category',selected,'category',!isIncome&&!isSplit)}</label>`+
+`<label id="tx-single-category" class="form-field full" ${isSplit||isIncome?'hidden':''}>Category${transactionCategorySelectMarkup('tx-category',selected,'category',!isIncome&&!isSplit)}</label>
+<div id="tx-income-category" class="form-field full income-category" ${isIncome?'':'hidden'}>Category <strong>Income</strong></div>`+
 `<fieldset id="tx-splits" class="form-field full" ${isSplit?'':'hidden'}>`+
 `<legend>Split categories</legend>`+
 `<p class="split-help">Choose a category and amount for each part.</p>`+
@@ -2947,7 +2953,7 @@ function openTransactionEditor(id,afterSave=()=>render()){
   };
   if(!group)return;
   const m=modal('Edit transaction',transactionEditorMarkup(group));
-  const form=m.querySelector('#transaction-edit-form'),rows=m.querySelector('#split-rows'),single=m.querySelector('#tx-single-category'),splitBox=m.querySelector('#tx-splits'),splitToggle=m.querySelector('#tx-split'),splitIndicator=m.querySelector('#split-remaining');
+  const form=m.querySelector('#transaction-edit-form'),rows=m.querySelector('#split-rows'),single=m.querySelector('#tx-single-category'),incomeCategory=m.querySelector('#tx-income-category'),splitBox=m.querySelector('#tx-splits'),splitToggle=m.querySelector('#tx-split'),splitIndicator=m.querySelector('#split-remaining');
   let rowNumber=rows.children.length;
   const updateSplitRemaining=()=>{
     if(!splitIndicator)return;
@@ -2989,12 +2995,16 @@ function openTransactionEditor(id,afterSave=()=>render()){
   const setSplit=enabled=>{
     splitToggle.checked=enabled;
     splitBox.hidden=!enabled;
-    single.hidden=enabled||form.elements['transaction-type'].value==='income';
-    single.querySelector('select')?.toggleAttribute('required',!enabled&&form.elements['transaction-type'].value==='expense');
+    const income=form.elements['transaction-type'].value==='income';
+    single.hidden=enabled||income;
+    incomeCategory.hidden=!income;
+    single.querySelector('select')?.toggleAttribute('required',!enabled&&!income);
     updateSplitRemaining();
   };
   Array.from(form.elements['transaction-type']).forEach(input=>input.addEventListener('change',()=>{
-    const expense=input.value==='expense'&&input.checked;m.querySelector('.split-toggle-control').hidden=!expense;if(!expense)setSplit(false);else setSplit(splitToggle.checked);
+    const expense=input.value==='expense'&&input.checked;
+    m.querySelector('.split-toggle-control').hidden=!expense;
+    setSplit(expense&&splitToggle.checked);
   }));
   splitToggle.addEventListener('change',()=>setSplit(splitToggle.checked));
   form.querySelector('#tx-amount').addEventListener('input',updateSplitRemaining);

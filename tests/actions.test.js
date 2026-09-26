@@ -61,6 +61,9 @@ test('transaction add and edit modals use native form submission', () => {
     assert.match(app, /form\.addEventListener\('submit',saveEditedTransaction\)/);
     assert.doesNotMatch(app, /m\.querySelector\('#save-tx'\)\.onclick/);
     assert.doesNotMatch(app, /requestSubmit/);
+    assert.match(app, /id="tx-income-category" class="form-field full income-category"/);
+    assert.match(app, /incomeCategory\.hidden=!income/);
+    assert.match(app, /single\.hidden=enabled\|\|!expense/);
 });
 
 test('clicking an edit Save transaction submit button changes the transaction', () => {
@@ -119,7 +122,7 @@ test('available-to-assign uses cumulative cash and carried-forward envelopes', (
     assert.match(app, /function checkingCashBalance\(m=activeMonth\)/);
     assert.match(app, /function categoryEnvelopeBalance\(name,m=activeMonth\)/);
     assert.match(app, /function envelopeTotal\(m=activeMonth\)/);
-    assert.match(app, /checkingCashBalance\(m\)-envelopeTotal\(m\)/);
+    assert.match(app, /checkingCashBalance\(m\)-assignedTotal\(m\)/);
     assert.match(app, /transaction\.type==='transfer'/);
 });
 
