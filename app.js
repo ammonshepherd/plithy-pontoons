@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.18';
+const APP_VERSION = '0.99.19';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -37,7 +37,7 @@ const initialState = () => ({
   },openingFunds:0,openingFundsMonth:'',categoryOrder:{
   },planMonths:{
   },monthLayouts:{
-  },syncRevision:0,wiped:false
+  },budgetBaseline:null,syncRevision:0,wiped:false
 });
 const blankState = () => ({
   version:1,groups:[],categories:{
@@ -45,7 +45,7 @@ const blankState = () => ({
   },openingFunds:0,openingFundsMonth:'',categoryOrder:{
   },planMonths:{
   },monthLayouts:{
-  },syncRevision:0,wiped:false
+  },budgetBaseline:null,syncRevision:0,wiped:false
 });
 let state = initialState();
 let activeMonth = monthKey();
@@ -182,7 +182,7 @@ async function pushNormalizedState(){
       groups:state.groups||GROUPS,tags:state.tags||[],openingFunds:Number(state.openingFunds||0),openingFundsMonth:state.openingFundsMonth||'',planMonths:state.planMonths||{
       },categoryOrder:state.categoryOrder||{
       },monthLayouts:state.monthLayouts||{
-      },accountNotes:Object.fromEntries((state.accounts||[]).map(a=>[a.id,a.notes||''])),transactionExtras:Object.fromEntries((state.transactions||[]).map(t=>[t.id,{
+      },budgetBaseline:state.budgetBaseline||null,accountNotes:Object.fromEntries((state.accounts||[]).map(a=>[a.id,a.notes||''])),transactionExtras:Object.fromEntries((state.transactions||[]).map(t=>[t.id,{
         tag:t.tag||'',reconciled:!!t.reconciled,bankTransactionId:t.bankTransactionId||'',checkNumber:t.checkNumber||'',postedDate:t.postedDate||'',cardNumber:t.cardNumber||'',transferBankTransactionIds:t.transferBankTransactionIds||[]
       }])),wiped:!!state.wiped
     };
@@ -242,6 +242,7 @@ async function pullNormalizedState(){
     };
     state.monthLayouts=metadata.monthLayouts||{
     };
+    state.budgetBaseline=metadata.budgetBaseline||null;
     GROUPS=cloneGroups(state.groups);
     const categoryById={
     };
@@ -273,6 +274,7 @@ async function pullNormalizedState(){
     state.transactions=(transactionsResult.data||[]).map(t=>({
       id:t.id,type:t.transaction_type,date:t.transaction_date,payee:t.payee||'',amount:Number(t.amount),accountId:t.account_id||'',toAccountId:t.to_account_id||'',category:categoryById[t.category_id]?.name||'',memo:t.memo||'',cleared:!!t.cleared,reconciled:!!t.reconciled,tag:t.tag||''
     }));
+    ensureBudgetBaseline();
     for(const row of layoutsResult.data||[]){
       const month=String(row.month_start).slice(0,7);
       const c=categoryById[row.category_id];
@@ -344,23 +346,25 @@ function isBudgetCategory(transaction){
   const categoryName=String(transaction.category||'').trim();
   return Boolean(categoryName&&categoryName!=='Uncategorized'&&category(categoryName));
 }
-function unassignedCashSpending(m=activeMonth){
+function unassignedCashSpending(m=activeMonth,afterMonth=''){
   const cashIds=cashAccountIds();
   return roundMoney(state.transactions
     .filter(transaction=>
       transaction.type==='expense'&&
       cashIds.has(transaction.accountId)&&
       monthIsOnOrBefore(transaction.date,m)&&
+      (!afterMonth||transaction.date.slice(0,7)>afterMonth)&&
       !isBudgetCategory(transaction)
     )
     .reduce((total,transaction)=>total+Number(transaction.amount||0),0));
 }
-function unassignedCashTransfers(m=activeMonth){
+function unassignedCashTransfers(m=activeMonth,afterMonth=''){
   const cashIds=cashAccountIds();
   return roundMoney(state.transactions
     .filter(transaction=>
       transaction.type==='transfer'&&
-      monthIsOnOrBefore(transaction.date,m)
+      monthIsOnOrBefore(transaction.date,m)&&
+      (!afterMonth||transaction.date.slice(0,7)>afterMonth)
     )
     .reduce((total,transaction)=>{
       const fromCash=cashIds.has(transaction.accountId);
@@ -370,20 +374,60 @@ function unassignedCashTransfers(m=activeMonth){
       return total;
     },0));
 }
+function currentCheckingOpeningBalances(){
+  return Object.fromEntries((state.accounts||[])
+    .filter(account=>account.type==='checking')
+    .map(account=>[account.id,Number(account.openingBalance||0)]));
+}
+function createBudgetBaseline(m=activeMonth){
+  return {
+    month:m,
+    amount:Math.max(checkingCashBalance(m),assignedTotalThrough(m)),
+    openingBalances:currentCheckingOpeningBalances()
+  };
+}
+function ensureBudgetBaseline(m=activeMonth){
+  if(!state.budgetBaseline||!state.budgetBaseline.month){
+    state.budgetBaseline=createBudgetBaseline(m);
+  }
+  return state.budgetBaseline;
+}
 function budgetableFunds(m=activeMonth){
   const cashIds=cashAccountIds();
+  const baseline=state.budgetBaseline;
+  if(!baseline){
+    const income=state.transactions
+      .filter(transaction=>
+        transaction.type==='income'&&
+        cashIds.has(transaction.accountId)&&
+        monthIsOnOrBefore(transaction.date,m)
+      )
+      .reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+    return roundMoney(
+      openingCheckingFunds(m)+
+      income-
+      unassignedCashSpending(m)-
+      unassignedCashTransfers(m)
+    );
+  }
+  const baselineOpening=Object.values(baseline.openingBalances||{})
+    .reduce((total,value)=>total+Number(value||0),0);
+  const currentOpening=Object.values(currentCheckingOpeningBalances())
+    .reduce((total,value)=>total+Number(value||0),0);
   const income=state.transactions
     .filter(transaction=>
       transaction.type==='income'&&
       cashIds.has(transaction.accountId)&&
-      monthIsOnOrBefore(transaction.date,m)
+      monthIsOnOrBefore(transaction.date,m)&&
+      transaction.date.slice(0,7)>baseline.month
     )
     .reduce((total,transaction)=>total+Number(transaction.amount||0),0);
   return roundMoney(
-    openingCheckingFunds(m)+
+    Number(baseline.amount||0)+
+    currentOpening-baselineOpening+
     income-
-    unassignedCashSpending(m)-
-    unassignedCashTransfers(m)
+    unassignedCashSpending(m,baseline.month)-
+    unassignedCashTransfers(m,baseline.month)
   );
 }
 function incomeTotal(m){
@@ -1999,6 +2043,7 @@ function restore(e){
       state=imported;
       GROUPS=Array.isArray(state.groups)?cloneGroups(state.groups):cloneGroups(DEFAULT_GROUPS);
       state.groups=cloneGroups(GROUPS);
+      ensureBudgetBaseline();
       save();
       render();
       appMessage('Budget restored','Your backup was restored successfully.','success');
