@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,paymentMatchScore,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,budgetableFunds,unassignedCashSpending,assignedTotalThrough,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,paymentMatchScore,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,isMissingCloudTableError,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -259,7 +259,7 @@ test('available-to-assign uses cumulative checking cash and carried-forward enve
     assert.equal(api.checkingCashBalance('2026-02'), 1650);
     assert.equal(api.categoryEnvelopeBalance('Groceries', '2026-02'), 150);
     assert.equal(api.envelopeTotal('2026-02'), 150);
-    assert.equal(api.availableToAssign('2026-02'), 1550);
+    assert.equal(api.availableToAssign('2026-02'), 1500);
 });
 test('checking transfers do not change cumulative checking cash', () => {
     const api = loadApp();
@@ -295,7 +295,7 @@ test('planned amounts, suggestions, and plan approval work by month', () => {
     api.copyPreviousMonthPlan();
     assert.equal(api.getState().categories.Groceries.plans['2026-10'], 63.21);
 });
-test('available-to-assign uses current cash less assignments, while remaining subtracts spending', () => {
+test('categorized spending reduces category remaining without reducing available twice', () => {
     const api = loadApp();
     const state = preparedState(api);
     state.openingFunds = 100;
@@ -307,8 +307,73 @@ test('available-to-assign uses current cash less assignments, while remaining su
      id: 'expense-1', type: 'expense', date: '2026-09-02', amount: 25.5, category: 'Groceries', accountId: state.accounts[0].id
   });
     api.setState(state);
-    assert.equal(api.availableToAssign('2026-09'), 274.5);
+    assert.equal(api.availableToAssign('2026-09'), 300);
     assert.equal(api.categoryRemaining('Groceries', '2026-09'), 174.5);
+});
+test('uncategorized cash spending reduces available to assign', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-09');
+    state.openingFundsMonth = '2026-09';
+    state.accounts = [{
+     id: 'checking-1', name: 'Checking', type: 'checking', openingBalance: 500
+  }];
+    state.assignments['2026-09'] = { Groceries: 200 };
+    state.transactions = [{
+     id: 'unassigned-expense',
+     type: 'expense',
+     date: '2026-09-02',
+     amount: 25.50,
+     category: 'Uncategorized',
+     accountId: 'checking-1'
+  }];
+    api.setState(state);
+    assert.equal(api.budgetableFunds('2026-09'), 474.50);
+    assert.equal(api.availableToAssign('2026-09'), 274.50);
+});
+test('a funded split expense does not create false global over-assignment', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-09');
+    state.openingFundsMonth = '2026-09';
+    state.accounts = [{
+     id: 'checking-1', name: 'Checking', type: 'checking', openingBalance: 0
+  }];
+    state.assignments['2026-09'] = {
+     Kids: 250,
+     General: 750
+  };
+    state.transactions = [{
+     id: 'income-1',
+     type: 'income',
+     date: '2026-09-01',
+     amount: 1000,
+     category: '',
+     accountId: 'checking-1'
+  }, {
+     id: 'split-kids',
+     type: 'expense',
+     date: '2026-09-25',
+     amount: 68.57,
+     category: 'Kids',
+     accountId: 'checking-1',
+     splitGroupId: 'split-1'
+  }, {
+     id: 'split-general',
+     type: 'expense',
+     date: '2026-09-25',
+     amount: 73.56,
+     category: 'General',
+     accountId: 'checking-1',
+     splitGroupId: 'split-1'
+  }];
+    api.setState(state);
+    assert.equal(api.checkingCashBalance('2026-09'), 857.87);
+    assert.equal(api.budgetableFunds('2026-09'), 1000);
+    assert.equal(api.availableToAssign('2026-09'), 0);
+    assert.equal(api.overAssigned('2026-09'), 0);
+    assert.equal(api.categoryRemaining('Kids', '2026-09'), 181.43);
+    assert.equal(api.categoryRemaining('General', '2026-09'), 676.44);
 });
 test('available-to-assign uses account opening balances once instead of stale aggregate opening funds', () => {
     const api = loadApp();

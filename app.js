@@ -1,4 +1,4 @@
-const APP_VERSION = '0.99.17';
+const APP_VERSION = '0.99.18';
 const VIEW_STORAGE_KEY = 'budgetbuddy-active-view';
 const ACCOUNT_DETAIL_STORAGE_KEY = 'budgetbuddy-active-account';
 const STORAGE_KEY = 'harbor-budget-state-v1';
@@ -313,10 +313,20 @@ function monthIsOnOrBefore(value,m){
 function cashAccountIds(){
   return new Set((state.accounts||[]).filter(account=>account.type==='checking').map(account=>account.id));
 }
+function roundMoney(value){
+  return Math.round((Number(value)+Number.EPSILON)*100)/100;
+}
+function openingCheckingFunds(m=activeMonth){
+  const cashIds=cashAccountIds();
+  const accountOpeningFunds=(state.accounts||[])
+    .filter(account=>cashIds.has(account.id))
+    .reduce((total,account)=>total+Number(account.openingBalance||0),0);
+  return state.openingFundsMonth&&state.openingFundsMonth<=m
+    ? accountOpeningFunds||Number(state.openingFunds||0)
+    : 0;
+}
 function checkingCashBalance(m=activeMonth){
   const cashIds=cashAccountIds();
-  const accountOpeningFunds=(state.accounts||[]).filter(account=>cashIds.has(account.id)).reduce((total,account)=>total+Number(account.openingBalance||0),0);
-  const openingFunds=state.openingFundsMonth&&state.openingFundsMonth<=m?accountOpeningFunds||Number(state.openingFunds||0):0;
   const transactions=state.transactions.filter(transaction=>monthIsOnOrBefore(transaction.date,m));
   const total=transactions.reduce((balance,transaction)=>{
     if(transaction.type==='income'&&cashIds.has(transaction.accountId))return balance+Number(transaction.amount||0);
@@ -327,8 +337,54 @@ function checkingCashBalance(m=activeMonth){
       return balance+outgoing+incoming;
     }
     return balance;
-  },openingFunds);
-  return Math.round(total*100)/100;
+  },openingCheckingFunds(m));
+  return roundMoney(total);
+}
+function isBudgetCategory(transaction){
+  const categoryName=String(transaction.category||'').trim();
+  return Boolean(categoryName&&categoryName!=='Uncategorized'&&category(categoryName));
+}
+function unassignedCashSpending(m=activeMonth){
+  const cashIds=cashAccountIds();
+  return roundMoney(state.transactions
+    .filter(transaction=>
+      transaction.type==='expense'&&
+      cashIds.has(transaction.accountId)&&
+      monthIsOnOrBefore(transaction.date,m)&&
+      !isBudgetCategory(transaction)
+    )
+    .reduce((total,transaction)=>total+Number(transaction.amount||0),0));
+}
+function unassignedCashTransfers(m=activeMonth){
+  const cashIds=cashAccountIds();
+  return roundMoney(state.transactions
+    .filter(transaction=>
+      transaction.type==='transfer'&&
+      monthIsOnOrBefore(transaction.date,m)
+    )
+    .reduce((total,transaction)=>{
+      const fromCash=cashIds.has(transaction.accountId);
+      const toCash=cashIds.has(transaction.toAccountId);
+      if(fromCash&&!toCash)return total+Number(transaction.amount||0);
+      if(!fromCash&&toCash)return total-Number(transaction.amount||0);
+      return total;
+    },0));
+}
+function budgetableFunds(m=activeMonth){
+  const cashIds=cashAccountIds();
+  const income=state.transactions
+    .filter(transaction=>
+      transaction.type==='income'&&
+      cashIds.has(transaction.accountId)&&
+      monthIsOnOrBefore(transaction.date,m)
+    )
+    .reduce((total,transaction)=>total+Number(transaction.amount||0),0);
+  return roundMoney(
+    openingCheckingFunds(m)+
+    income-
+    unassignedCashSpending(m)-
+    unassignedCashTransfers(m)
+  );
 }
 function incomeTotal(m){
   return monthTransactions(m).filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0);
@@ -338,6 +394,11 @@ function expenseTotal(m){
 }
 function assignedTotal(m){
   return Object.values(assignments(m)).reduce((a,v)=>a+Number(v||0),0);
+}
+function assignedTotalThrough(m=activeMonth){
+  return Object.entries(state.assignments||{})
+    .filter(([month])=>month<=m)
+    .reduce((total,[,monthly])=>total+Object.values(monthly||{}).reduce((sum,value)=>sum+Number(value||0),0),0);
 }
 function categoryEnvelopeBalance(name,m=activeMonth){
   const assigned=Object.entries(state.assignments||{}).filter(([month])=>month<=m).reduce((total,[,monthly])=>total+Number(monthly?.[name]||0),0);
@@ -384,9 +445,10 @@ function planSuggestion(name,m=activeMonth){
    return spent;
 }
 function availableToAssign(m=activeMonth){
-  // Available means current checking cash that has not been assigned this month.
-  // Spending changes category Remaining, not the amount available to assign.
-  return Math.round((checkingCashBalance(m)-assignedTotal(m))*100)/100;
+  // Account balances include every transaction. Budgetable funds exclude
+  // categorized spending because that spending is reflected in category
+  // Remaining, preventing the same expense from being counted twice.
+  return roundMoney(budgetableFunds(m)-assignedTotalThrough(m));
 }
 function overAssigned(m=activeMonth){
   return Math.max(0,Math.round(-availableToAssign(m)*100)/100);
