@@ -122,7 +122,10 @@ test('available-to-assign uses cumulative cash and carried-forward envelopes', (
     assert.match(app, /function checkingCashBalance\(m=activeMonth\)/);
     assert.match(app, /function categoryEnvelopeBalance\(name,m=activeMonth\)/);
     assert.match(app, /function envelopeTotal\(m=activeMonth\)/);
-    assert.match(app, /function budgetableFunds\(m=activeMonth\)/);\n    assert.match(app, /function assignedTotalThrough\(m=activeMonth\)/);\n    assert.match(app, /budgetableFunds\(m\)-assignedTotalThrough\(m\)/);
+    assert.match(app, /function budgetableFunds\(m=activeMonth\)/);
+    assert.match(app, /function ensureBudgetBaseline\(m=activeMonth\)/);
+    assert.match(app, /function assignedTotalThrough\(m=activeMonth\)/);
+    assert.match(app, /budgetableFunds\(m\)-assignedTotalThrough\(m\)/);
     assert.match(app, /transaction\.type==='transfer'/);
 });
 

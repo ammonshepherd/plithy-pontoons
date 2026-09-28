@@ -84,7 +84,7 @@ function loadApp() {
     setHousehold:value=>{cloudHouseholdId=value;},
     replaceSideEffects:(saveFn,renderFn,messageFn)=>{save=saveFn;render=renderFn;appMessage=messageFn;},
     initialState,blankState,category,monthGroups,addNameToMonthLayout,removeNameFromMonthLayout,renameNameInMonthLayouts,
-    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,budgetableFunds,unassignedCashSpending,assignedTotalThrough,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,paymentMatchScore,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
+    moveGroup,moveGroupRelative,moveCategory,createGroupRecord,createCategoryRecord,availableToAssign,overAssigned,budgetableFunds,unassignedCashSpending,assignedTotalThrough,createBudgetBaseline,ensureBudgetBaseline,checkingCashBalance,categoryEnvelopeBalance,envelopeTotal,categorySpentThrough,creditCardPaymentReserve,totalCreditCardPaymentReserve,paymentMatchScore,possibleTransferPairs,categoryRemaining,plannedFor,hasExplicitPlan,hasSuggestedPlan,
     acceptCurrentPlan,copyPreviousMonthPlan,isMissingCloudTableError,normalizedRows,accountBalance,transactionPartsFromValues,transactionRecordsFromParts,transactionCategorySelectMarkup,passwordStrength,saveUserAccount,parseBankTransactionCsv,bankTransactionFromRow,bankImportPlan,
     setField:(id,value)=>{document.getElementById(id).value=value;},
     getUpdatePayload:()=>window.__lastPayload,
@@ -375,6 +375,43 @@ test('a funded split expense does not create false global over-assignment', () =
     assert.equal(api.categoryRemaining('Kids', '2026-09'), 181.43);
     assert.equal(api.categoryRemaining('General', '2026-09'), 676.44);
 });
+test('existing assigned funds are preserved by the migrated budget baseline', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-09');
+    state.openingFundsMonth = '2026-09';
+    state.accounts = [{
+     id: 'checking-1', name: 'Checking', type: 'checking', openingBalance: 1619.63
+  }];
+    state.assignments['2026-09'] = { Groceries: 6615.90 };
+    state.transactions = [{
+     id: 'income-1', type: 'income', date: '2026-09-01', amount: 9234.70, category: '', accountId: 'checking-1'
+  }, {
+     id: 'expense-1', type: 'expense', date: '2026-09-02', amount: 1182.48, category: 'Groceries', accountId: 'checking-1'
+  }, {
+     id: 'transfer-1', type: 'transfer', date: '2026-09-03', amount: 3198.08, accountId: 'checking-1', toAccountId: 'credit-1'
+  }];
+    api.setState(state);
+    api.ensureBudgetBaseline('2026-09');
+    assert.equal(api.checkingCashBalance('2026-09'), 6473.77);
+    assert.equal(api.budgetableFunds('2026-09'), 6615.90);
+    assert.equal(api.availableToAssign('2026-09'), 0);
+});
+test('opening balance changes adjust the persisted budget baseline', () => {
+    const api = loadApp();
+    const state = api.initialState();
+    api.setMonth('2026-09');
+    state.openingFundsMonth = '2026-09';
+    state.accounts = [{
+     id: 'checking-1', name: 'Checking', type: 'checking', openingBalance: 4615.61
+  }];
+    state.assignments['2026-09'] = { Groceries: 4615.61 };
+    api.setState(state);
+    api.ensureBudgetBaseline('2026-09');
+    state.accounts[0].openingBalance = 4000;
+    assert.equal(api.availableToAssign('2026-09'), -615.61);
+});
+
 test('available-to-assign uses account opening balances once instead of stale aggregate opening funds', () => {
     const api = loadApp();
     const state = preparedState(api);
